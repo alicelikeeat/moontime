@@ -78,8 +78,11 @@ struct RootView: View {
     /// Tab bar, add button, quick-action menu and messages share one glass
     /// container, so they merge, split and morph into each other.
     private var bottomChrome: some View {
-        GlassGroup(spacing: 16) {
-            VStack(alignment: .trailing, spacing: 10) {
+        // Merge distance stays below the gaps between pieces, so each one
+        // keeps its own touch target once settled; they only blend while
+        // popping in and out.
+        GlassGroup(spacing: 8) {
+            VStack(alignment: .trailing, spacing: 12) {
                 if let toast = chrome.toast {
                     HStack(spacing: 8) {
                         Image(systemName: toast.symbol)

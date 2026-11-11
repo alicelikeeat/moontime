@@ -31,7 +31,7 @@ final class ScreenshotTests: XCTestCase {
         app.swipeDown()
         pause(1)
 
-        tap(app.buttons["tab.inbox"])
+        tapTab(app, "tab.inbox")
         pause(0.8)
         snap("02-inbox")
         tap(app.buttons["安排"].firstMatch)
@@ -48,7 +48,7 @@ final class ScreenshotTests: XCTestCase {
         tap(app.buttons["取消"])
         pause(0.8)
 
-        tap(app.buttons["tab.focus"])
+        tapTab(app, "tab.focus")
         snap("04-focus-empty")
 
         tap(app.buttons["focus.start"])
@@ -106,12 +106,19 @@ final class ScreenshotTests: XCTestCase {
         app.launchArguments = ["-UITests", "-EveningDemo"]
         app.launch()
         pause(1)
-        tap(app.buttons["tab.review"])
+        tapTab(app, "tab.review")
         pause(1)
         snap("11-review")
         app.swipeUp()
         pause(1)
         snap("12-review-bottom")
+    }
+
+    /// Tabs hide inside a glass ball after scrolling; open it first.
+    private func tapTab(_ app: XCUIApplication, _ id: String) {
+        let collapsed = app.buttons["tabbar.collapsed"]
+        if collapsed.exists { collapsed.tap(); pause(0.8) }
+        tap(app.buttons[id])
     }
 
     private func tap(_ element: XCUIElement) {

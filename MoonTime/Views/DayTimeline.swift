@@ -305,8 +305,8 @@ private struct BlockActions: View {
     @State private var spread = false
 
     var body: some View {
-        GlassGroup(spacing: 18) {
-            HStack(spacing: spread ? 10 : -38) {
+        GlassGroup(spacing: 8) {
+            HStack(spacing: spread ? 12 : -38) {
                 if canFocus {
                     action("timer", "开始专注", tint: Palette.accent, color: .white, id: "action.focus", run: onFocus)
                 }

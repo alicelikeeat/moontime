@@ -131,7 +131,7 @@ private struct ActiveFocusContent: View {
 
             // Running: pause and finish are one fused pill of glass.
             // Paused: they split apart and a +15 button pops out between them.
-            GlassGroup(spacing: 18) {
+            GlassGroup(spacing: 8) {
                 HStack(spacing: state.isPaused ? 12 : 2) {
                     Button(action: store.togglePause) {
                         Label(state.isPaused ? "继续" : "暂停", systemImage: state.isPaused ? "play.fill" : "pause.fill")

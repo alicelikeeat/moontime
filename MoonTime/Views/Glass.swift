@@ -120,6 +120,8 @@ struct CollapsesTabBarOnScroll: ViewModifier {
             content.onScrollGeometryChange(for: CGFloat.self) { geo in
                 geo.contentOffset.y + geo.contentInsets.top
             } action: { old, new in
+                // Big jumps are programmatic (scrollTo), not the user swiping.
+                guard abs(new - old) < 150 else { return }
                 if new < 40 {
                     chrome.setTabBarCollapsed(false)
                 } else if new - old > 6 {

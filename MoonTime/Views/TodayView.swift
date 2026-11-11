@@ -38,6 +38,7 @@ struct TodayView: View {
             }
             .padding(.horizontal, 12)
         }
+        .safeAreaInset(edge: .top, spacing: 0) { TopScrollEdgeBlur() }
         .background(AmbientBackground())
         .foregroundStyle(Palette.label)
     }
