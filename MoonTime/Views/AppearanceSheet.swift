@@ -7,6 +7,7 @@ struct AppearanceSheet: View {
     @AppStorage(GlassAppearance.styleKey) private var glassStyle = GlassAppearance.Style.clear
     @AppStorage(GlassAppearance.frostKey) private var frost = 0.0
     @AppStorage(Palette.schemeKey) private var scheme = "minimal"
+    @AppStorage(Palette.colourKey) private var colourful = false
 
     var body: some View {
         NavigationStack {
@@ -19,10 +20,15 @@ struct AppearanceSheet: View {
                     }
                     .pickerStyle(.segmented)
                     .accessibilityIdentifier("appearance.scheme")
+                    if scheme == "minimal" {
+                        Toggle("彩色模式", isOn: $colourful)
+                            .tint(Palette.accent)
+                            .accessibilityIdentifier("appearance.colourful")
+                    }
                 } header: {
                     Text("配色")
                 } footer: {
-                    Text("简约：白底、黑字、浅灰卡片，玻璃只用在浮动按钮上。月光：暖白底色、靛蓝强调色和低饱和分类色。黑白：白色玻璃，文字和图标全部黑色。")
+                    Text("简约：白底、黑字、浅灰卡片，玻璃只用在浮动按钮上；打开彩色模式后，时间块、习惯和倒数日会显示颜色。月光：暖白底色、靛蓝强调色，始终彩色。黑白：白色玻璃，文字和图标全部黑色。")
                 }
                 Section("背景") {
                     Picker("背景", selection: $background) {
@@ -66,6 +72,7 @@ struct AppearanceSheet: View {
                             glassStyle = .clear
                             frost = 0
                             scheme = "minimal"
+                            colourful = false
                         }
                     }
                 }

@@ -25,7 +25,13 @@ enum Palette {
     /// Updated by the app when the setting changes (the root view is rebuilt then).
     static var scheme: Scheme = Scheme(rawValue: UserDefaults.standard.string(forKey: schemeKey) ?? "") ?? .minimal
 
+    static let colourKey = "appearance.colourful"
+    /// Colour mode for the minimal scheme: categories, habits and countdowns in colour.
+    static var colourful: Bool = UserDefaults.standard.bool(forKey: colourKey)
+
     static var monochrome: Bool { scheme == .white }
+    /// Whether categories, habits and countdowns are drawn in colour.
+    static var usesColour: Bool { scheme == .moon || (scheme == .minimal && colourful) }
     /// Content cards are flat grey instead of glass.
     static var flatContent: Bool { scheme == .minimal }
 
@@ -59,7 +65,7 @@ enum Palette {
     static var onAccent: Color { pick(.white, .white, .black) }
     static var softAccentFill: Color { pick(Color(hex: 0xF4F4F4), Color(hex: 0xECEEFB), Color(hex: 0xF2F2F7)) }
     static var softAccentText: Color { pick(Color(hex: 0x0D0D0D), Color(hex: 0x3C47B8), .black) }
-    static var nowLine: Color { pick(Color(hex: 0x0D0D0D), Color(hex: 0xE5675A), .black) }
+    static var nowLine: Color { pick(colourful ? Color(hex: 0xE5675A) : Color(hex: 0x0D0D0D), Color(hex: 0xE5675A), .black) }
 
     static var freeSlotBorder: Color { pick(Color(hex: 0xD9D9D9), Color(hex: 0xC9C5BC), Color(hex: 0xA8A8B0)) }
     static var freeSlotText: Color { pick(Color(hex: 0x8F8F8F), Color(hex: 0x86868B), .black) }
@@ -96,7 +102,7 @@ enum Palette {
     /// A picked colour as shown: black in the minimal and white schemes;
     /// older saved colours map onto the moon set.
     static func tone(_ hex: UInt32) -> Color {
-        if scheme != .moon { return label }
+        if !usesColour { return label }
         let legacy: [UInt32: UInt32] = [
             0x0060DF: 0x4F5BD5, 0x5B3FD9: 0x8E6BBF, 0x00796B: 0x3F8F6B,
             0xC2410C: 0xC48A3A, 0xD70015: 0xD9675A, 0x3A3A3C: 0x5E6675,
