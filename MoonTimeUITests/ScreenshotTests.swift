@@ -143,6 +143,20 @@ final class ScreenshotTests: XCTestCase {
         tap(app.buttons["取消"])
     }
 
+    /// Minimal scheme with colour mode on (set through launch-argument defaults).
+    func testColourMode() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-UITests", "-appearance.colourful", "YES"]
+        app.launch()
+        pause(1.5)
+        snap("17-colour-today")
+        tapTab(app, "tab.life")
+        pause(1)
+        tap(app.buttons["life.habits"])
+        pause(1)
+        snap("18-colour-habits")
+    }
+
     func testEveningReview() {
         let app = XCUIApplication()
         app.launchArguments = ["-UITests", "-EveningDemo"]
