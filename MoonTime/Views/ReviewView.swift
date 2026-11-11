@@ -2,6 +2,9 @@ import SwiftUI
 
 struct ReviewView: View {
     @Environment(DayStore.self) private var store
+    @Environment(ChromeState.self) private var chrome
+    @Namespace private var glass
+    @State private var statsMerged = true
     var onPlanTomorrow: () -> Void
 
     var body: some View {
@@ -22,10 +25,17 @@ struct ReviewView: View {
                 }
                 .padding(.horizontal, 4)
 
-                HStack(spacing: 10) {
-                    statCard("\(done.count)/\(blocks.count)", "完成事项")
-                    statCard(TimeFormat.hoursMinutes(focusTime), "专注时长")
-                    statCard(onPlanRate.formatted(.percent.precision(.fractionLength(0))), "按计划执行")
+                // Starts as one slab of glass, then splits into three cards.
+                GlassGroup(spacing: 10) {
+                    HStack(spacing: 10) {
+                        statCard("\(done.count)/\(blocks.count)", "完成事项")
+                        statCard(TimeFormat.hoursMinutes(focusTime), "专注时长")
+                        statCard(onPlanRate.formatted(.percent.precision(.fractionLength(0))), "按计划执行")
+                    }
+                }
+                .task {
+                    try? await Task.sleep(for: .milliseconds(300))
+                    withAnimation(.bouncy(duration: 0.7, extraBounce: 0.1)) { statsMerged = false }
                 }
 
                 PlanVsActualCard(blocks: blocks)
@@ -37,7 +47,10 @@ struct ReviewView: View {
                             Text(block.title).font(.system(size: 15, weight: .semibold)).lineLimit(1)
                         }
                         Spacer()
-                        Button("移到明天") { store.moveToTomorrow(block.id) }
+                        Button("移到明天") {
+                            withAnimation(.bouncy) { store.moveToTomorrow(block.id) }
+                            chrome.show("已移到明天", symbol: "arrow.turn.down.right")
+                        }
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(Palette.softAccentText)
                             .padding(.horizontal, 14)
@@ -79,6 +92,7 @@ struct ReviewView: View {
             .padding(.top, 12)
             .padding(.bottom, 110)
         }
+        .collapsesTabBarOnScroll()
         .safeAreaInset(edge: .top, spacing: 0) { TopScrollEdgeBlur() }
         .background(AmbientBackground())
         .foregroundStyle(Palette.label)
@@ -92,6 +106,7 @@ struct ReviewView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
         .glassSurface(in: RoundedRectangle(cornerRadius: 16))
+        .glassUnion(statsMerged ? "stats" : "stat.\(label)", in: glass)
     }
 }
 

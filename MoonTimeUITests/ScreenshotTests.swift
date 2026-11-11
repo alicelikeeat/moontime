@@ -16,13 +16,37 @@ final class ScreenshotTests: XCTestCase {
         pause(1.5)
         snap("01-today")
 
-        tap(app.buttons["tab.inbox"])
-        snap("02-inbox")
+        // Tap a block: glass actions pop out and split apart.
+        let block = app.descendants(matching: .any)["block.设计评审"].firstMatch
+        tap(block)
+        pause(1.2)
+        snap("01b-block-actions")
+        tap(block)
+        pause(0.6)
 
+        // Scroll down: the tab bar shrinks into a glass ball.
+        app.swipeUp()
+        pause(1.2)
+        snap("01c-tabbar-collapsed")
+        app.swipeDown()
+        pause(1)
+
+        tap(app.buttons["tab.inbox"])
+        pause(0.8)
+        snap("02-inbox")
+        tap(app.buttons["安排"].firstMatch)
+        pause(0.8)
+        snap("02b-toast")
+
+        // The + button pops out a quick-action menu.
         tap(app.buttons["new-block"])
         pause(1)
+        snap("03a-fab-menu")
+        tap(app.buttons["fab.new"])
+        pause(1.2)
         snap("03-new-block")
         tap(app.buttons["取消"])
+        pause(0.8)
 
         tap(app.buttons["tab.focus"])
         snap("04-focus-empty")
@@ -30,6 +54,13 @@ final class ScreenshotTests: XCTestCase {
         tap(app.buttons["focus.start"])
         pause(2)
         snap("05-focus-running")
+
+        // Pause: the fused controls split and +15 pops out.
+        tap(app.buttons["focus.pause"])
+        pause(1.2)
+        snap("05b-focus-paused")
+        tap(app.buttons["focus.pause"])
+        pause(1)
 
         // The focus screen hides the tab bar; leave through its back button.
         tap(app.buttons["返回今天"])

@@ -2,6 +2,8 @@ import SwiftUI
 
 struct DayTimeline: View {
     @Environment(DayStore.self) private var store
+    @Environment(ChromeState.self) private var chrome
+    @State private var selectedID: UUID?
 
     let day: Date
     let blocks: [TimeBlock]
@@ -21,6 +23,8 @@ struct DayTimeline: View {
             ScrollView(showsIndicators: false) {
                 ZStack(alignment: .topLeading) {
                     hourGrid
+                        .contentShape(Rectangle())
+                        .onTapGesture { select(nil) }
 
                     ForEach(freeSlots, id: \.start) { slot in
                         freeSlotCard(slot)
@@ -31,11 +35,46 @@ struct DayTimeline: View {
 
                     ForEach(blocks) { block in
                         let h = max(25, height(for: block.duration) - 3)
+                        let selected = selectedID == block.id
                         BlockCard(block: block, height: h, focus: focus?.blockID == block.id ? focus : nil)
                             .frame(height: h)
+                            .scaleEffect(selected ? 1.02 : 1, anchor: .center)
+                            .overlay(alignment: .bottomTrailing) {
+                                if selected {
+                                    BlockActions(
+                                        canFocus: canFocus(block),
+                                        isDone: block.isDone,
+                                        onFocus: { select(nil); onTap(block) },
+                                        onToggleDone: {
+                                            select(nil)
+                                            withAnimation(.bouncy) { store.toggleDone(block.id) }
+                                            chrome.show(block.isDone ? "已标记为未完成" : "已完成：\(block.title)")
+                                        },
+                                        onTomorrow: {
+                                            select(nil)
+                                            withAnimation(.bouncy) { store.moveToTomorrow(block.id) }
+                                            chrome.show("已移到明天", symbol: "arrow.turn.down.right")
+                                        },
+                                        onDelete: {
+                                            select(nil)
+                                            withAnimation(.bouncy) { store.delete(block.id) }
+                                            chrome.show("已删除", symbol: "trash")
+                                        }
+                                    )
+                                    .offset(y: 54)
+                                    .padding(.trailing, 4)
+                                }
+                            }
                             .padding(.leading, blockInset)
                             .offset(y: y(for: block.start) + 1)
-                            .onTapGesture { onTap(block) }
+                            .zIndex(selected ? 2 : 0)
+                            .onTapGesture {
+                                if focus?.blockID == block.id {
+                                    onTap(block)
+                                } else {
+                                    select(selected ? nil : block.id)
+                                }
+                            }
                             .contextMenu { menu(for: block) }
                     }
 
@@ -43,14 +82,28 @@ struct DayTimeline: View {
                         TimelineView(.periodic(from: .now, by: 60)) { context in
                             nowLine(at: context.date)
                         }
+                        .allowsHitTesting(false)
+                        .zIndex(1)
                     }
                 }
                 .padding(.top, 8)
                 .padding(.bottom, 110) // room for the floating tab bar
             }
+            .collapsesTabBarOnScroll()
             .onAppear { proxy.scrollTo(scrollAnchorHour, anchor: .top) }
-            .onChange(of: day) { proxy.scrollTo(scrollAnchorHour, anchor: .top) }
+            .onChange(of: day) {
+                selectedID = nil
+                proxy.scrollTo(scrollAnchorHour, anchor: .top)
+            }
         }
+    }
+
+    private func select(_ id: UUID?) {
+        withAnimation(.bouncy(duration: 0.45)) { selectedID = id }
+    }
+
+    private func canFocus(_ block: TimeBlock) -> Bool {
+        !block.isDone && store.focus == nil && Calendar.current.isDateInToday(block.start)
     }
 
     private var scrollAnchorHour: Int {
@@ -161,6 +214,7 @@ struct BlockCard: View {
         .contentShape(RoundedRectangle(cornerRadius: cornerRadius))
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("block.\(block.title)")
     }
 
     private var cornerRadius: CGFloat { height < 44 ? 8 : (height < 70 ? 10 : 12) }
@@ -235,5 +289,51 @@ struct BlockCard: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
+    }
+}
+
+/// Glass buttons that pop out of a selected time block. They start as one
+/// merged drop of glass and spring apart into separate buttons.
+private struct BlockActions: View {
+    let canFocus: Bool
+    let isDone: Bool
+    var onFocus: () -> Void
+    var onToggleDone: () -> Void
+    var onTomorrow: () -> Void
+    var onDelete: () -> Void
+
+    @State private var spread = false
+
+    var body: some View {
+        GlassGroup(spacing: 18) {
+            HStack(spacing: spread ? 10 : -38) {
+                if canFocus {
+                    action("timer", "开始专注", tint: Palette.accent, color: .white, id: "action.focus", run: onFocus)
+                }
+                action(isDone ? "arrow.uturn.backward" : "checkmark", isDone ? "标记为未完成" : "标记为完成",
+                       color: Palette.label, id: "action.done", run: onToggleDone)
+                action("arrow.turn.down.right", "移到明天", color: Palette.label, id: "action.tomorrow", run: onTomorrow)
+                action("trash", "删除", color: Palette.nowLine, id: "action.delete", run: onDelete)
+            }
+        }
+        .glassPop()
+        .onAppear {
+            withAnimation(.bouncy(duration: 0.55, extraBounce: 0.18).delay(0.06)) { spread = true }
+        }
+    }
+
+    private func action(
+        _ symbol: String, _ label: String, tint: Color? = nil, color: Color, id: String, run: @escaping () -> Void
+    ) -> some View {
+        Button(action: run) {
+            Image(systemName: symbol)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(color)
+                .frame(width: 46, height: 46)
+                .glassSurface(in: Circle(), tint: tint, interactive: true)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .accessibilityIdentifier(id)
     }
 }

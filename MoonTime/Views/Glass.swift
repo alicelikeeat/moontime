@@ -46,6 +46,98 @@ struct GlassGroup<Content: View>: View {
     }
 }
 
+extension View {
+    /// Identity for morphing between glass shapes inside a `GlassGroup` (iOS 26+).
+    @ViewBuilder
+    func glassID(_ id: String, in namespace: Namespace.ID) -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffectID(id, in: namespace)
+        } else {
+            self
+        }
+    }
+
+    /// Glass shapes sharing a union id render as one continuous piece of glass.
+    /// Give each view its own id to split them apart again.
+    @ViewBuilder
+    func glassUnion(_ id: String, in namespace: Namespace.ID) -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffectUnion(id: id, namespace: namespace)
+        } else {
+            self
+        }
+    }
+
+    /// Glass that materializes in and out; a springy scale on older systems.
+    @ViewBuilder
+    func glassPop() -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffectTransition(.materialize)
+                .transition(.scale(scale: 0.6).combined(with: .opacity))
+        } else {
+            transition(.scale(scale: 0.6).combined(with: .opacity))
+        }
+    }
+}
+
+/// App-wide chrome: whether the tab bar is shrunk, and the glass message above it.
+@Observable
+@MainActor
+final class ChromeState {
+    struct Toast: Identifiable, Equatable {
+        let id = UUID()
+        let text: String
+        let symbol: String
+    }
+
+    var tabBarCollapsed = false
+    var toast: Toast?
+
+    @ObservationIgnored private var toastTask: Task<Void, Never>?
+
+    func show(_ text: String, symbol: String = "checkmark") {
+        toastTask?.cancel()
+        withAnimation(.bouncy(duration: 0.45)) { toast = Toast(text: text, symbol: symbol) }
+        toastTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(2.4))
+            guard !Task.isCancelled else { return }
+            withAnimation(.smooth(duration: 0.35)) { self?.toast = nil }
+        }
+    }
+
+    func setTabBarCollapsed(_ collapsed: Bool) {
+        guard tabBarCollapsed != collapsed else { return }
+        withAnimation(.bouncy(duration: 0.45)) { tabBarCollapsed = collapsed }
+    }
+}
+
+/// Shrinks the tab bar while scrolling down, restores it when scrolling up (iOS 18+).
+struct CollapsesTabBarOnScroll: ViewModifier {
+    @Environment(ChromeState.self) private var chrome
+
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.onScrollGeometryChange(for: CGFloat.self) { geo in
+                geo.contentOffset.y + geo.contentInsets.top
+            } action: { old, new in
+                if new < 40 {
+                    chrome.setTabBarCollapsed(false)
+                } else if new - old > 6 {
+                    chrome.setTabBarCollapsed(true)
+                } else if new - old < -6 {
+                    chrome.setTabBarCollapsed(false)
+                }
+            }
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    func collapsesTabBarOnScroll() -> some View { modifier(CollapsesTabBarOnScroll()) }
+}
+
 /// Soft colour fields behind the glass so it has something to refract.
 struct AmbientBackground: View {
     var dark = false

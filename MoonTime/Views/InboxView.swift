@@ -2,6 +2,7 @@ import SwiftUI
 
 struct InboxView: View {
     @Environment(DayStore.self) private var store
+    @Environment(ChromeState.self) private var chrome
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -30,7 +31,13 @@ struct InboxView: View {
                                 .foregroundStyle(Palette.secondaryLabel)
                         }
                         Spacer()
-                        Button("安排") { store.schedule(item) }
+                        Button("安排") {
+                            var scheduled: TimeBlock?
+                            withAnimation(.bouncy(duration: 0.5)) { scheduled = store.schedule(item) }
+                            if let scheduled {
+                                chrome.show("已安排到 \(TimeFormat.clock(scheduled.start))", symbol: "calendar.badge.plus")
+                            }
+                        }
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(Palette.softAccentText)
                             .padding(.horizontal, 14)
@@ -41,12 +48,14 @@ struct InboxView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
                     .glassSurface(in: RoundedRectangle(cornerRadius: 20))
+                    .glassPop()
                 }
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
             .padding(.bottom, 110)
         }
+        .collapsesTabBarOnScroll()
         .safeAreaInset(edge: .top, spacing: 0) { TopScrollEdgeBlur() }
         .background(AmbientBackground())
         .foregroundStyle(Palette.label)

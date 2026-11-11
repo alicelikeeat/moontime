@@ -9,7 +9,7 @@ struct FocusView: View {
             topBar
             if let focus = store.focus {
                 TimelineView(.periodic(from: .now, by: 1)) { context in
-                    ActiveFocusContent(focus: focus, now: context.date)
+                    ActiveFocusContent(focus: focus, now: context.date, onFinished: onClose)
                 }
             } else {
                 emptyState
@@ -90,8 +90,13 @@ private struct BadgeLabelStyle: LabelStyle {
 
 private struct ActiveFocusContent: View {
     @Environment(DayStore.self) private var store
+    @Environment(ChromeState.self) private var chrome
     let focus: ActiveFocus
     let now: Date
+    var onFinished: () -> Void
+
+    @Namespace private var glass
+    @State private var statsMerged = true
 
     private var state: FocusActivityAttributes.ContentState { focus.state }
 
@@ -110,29 +115,59 @@ private struct ActiveFocusContent: View {
 
             ring
 
-            HStack(spacing: 10) {
-                stat(value: "\(TimeFormat.minutes(state.elapsed(at: now))) 分", label: "已专注")
-                stat(value: TimeFormat.duration(state.total), label: "计划")
-                stat(value: "\(focus.pauseCount) 次", label: "暂停")
+            GlassGroup(spacing: 10) {
+                HStack(spacing: 10) {
+                    stat(value: "\(TimeFormat.minutes(state.elapsed(at: now))) 分", label: "已专注")
+                    stat(value: TimeFormat.duration(state.total), label: "计划")
+                    stat(value: "\(focus.pauseCount) 次", label: "暂停")
+                }
+            }
+            .task {
+                try? await Task.sleep(for: .milliseconds(300))
+                withAnimation(.bouncy(duration: 0.7, extraBounce: 0.1)) { statsMerged = false }
             }
 
             Spacer(minLength: 0)
 
-            HStack(spacing: 12) {
-                Button(action: store.togglePause) {
-                    Label(state.isPaused ? "继续" : "暂停", systemImage: state.isPaused ? "play.fill" : "pause.fill")
-                        .font(.system(size: 17, weight: .semibold))
-                        .frame(maxWidth: .infinity, minHeight: 56)
-                        .glassSurface(in: Capsule(), interactive: true, tone: .dark)
+            // Running: pause and finish are one fused pill of glass.
+            // Paused: they split apart and a +15 button pops out between them.
+            GlassGroup(spacing: 18) {
+                HStack(spacing: state.isPaused ? 12 : 2) {
+                    Button(action: store.togglePause) {
+                        Label(state.isPaused ? "继续" : "暂停", systemImage: state.isPaused ? "play.fill" : "pause.fill")
+                            .font(.system(size: 17, weight: .semibold))
+                            .frame(maxWidth: .infinity, minHeight: 56)
+                            .glassSurface(in: Capsule(), interactive: true, tone: .dark)
+                            .glassUnion(state.isPaused ? "pause" : "controls", in: glass)
+                            .glassID("pause", in: glass)
+                    }
+                    .accessibilityIdentifier("focus.pause")
+
+                    if state.isPaused {
+                        Button(action: store.extendFocus) {
+                            Text("+15")
+                                .font(.system(size: 17, weight: .semibold))
+                                .frame(width: 72, height: 56)
+                                .glassSurface(in: Capsule(), interactive: true, tone: .dark)
+                                .glassID("extend", in: glass)
+                        }
+                        .accessibilityLabel("延长 15 分钟")
+                        .glassPop()
+                    }
+
+                    Button(action: finish) {
+                        Label("完成", systemImage: "checkmark")
+                            .font(.system(size: 17, weight: .semibold))
+                            .frame(maxWidth: .infinity, minHeight: 56)
+                            .glassSurface(in: Capsule(), tint: Palette.focusAccent, interactive: true, tone: .dark)
+                            .glassUnion(state.isPaused ? "finish" : "controls", in: glass)
+                            .glassID("finish", in: glass)
+                    }
+                    .accessibilityIdentifier("focus.finish")
                 }
-                Button(action: { store.completeFocus() }) {
-                    Label("完成", systemImage: "checkmark")
-                        .font(.system(size: 17, weight: .semibold))
-                        .frame(maxWidth: .infinity, minHeight: 56)
-                        .glassSurface(in: Capsule(), tint: Palette.focusAccent, interactive: true, tone: .dark)
-                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
+            .animation(.bouncy(duration: 0.55, extraBounce: 0.12), value: state.isPaused)
 
             if let nextTitle = state.nextTitle, let nextStart = state.nextStart {
                 nextUp(title: nextTitle, start: nextStart)
@@ -140,9 +175,20 @@ private struct ActiveFocusContent: View {
         }
     }
 
+    private func finish() {
+        let minutes = TimeFormat.minutes(state.elapsed(at: .now))
+        let title = focus.title
+        store.completeFocus()
+        chrome.show("完成：\(title) · 专注 \(minutes) 分钟")
+        onFinished()
+    }
+
     private var ring: some View {
         ZStack {
             Circle().stroke(.white.opacity(0.1), lineWidth: 14)
+            Color.clear
+                .glassSurface(in: Circle(), tone: .dark)
+                .padding(26)
             Circle()
                 .trim(from: 0, to: state.progress(at: now))
                 .stroke(Palette.focusAccent, style: StrokeStyle(lineWidth: 14, lineCap: .round))
@@ -169,6 +215,7 @@ private struct ActiveFocusContent: View {
         .frame(maxWidth: .infinity)
         .padding(12)
         .glassSurface(in: RoundedRectangle(cornerRadius: 16), tone: .dark)
+        .glassUnion(statsMerged ? "stats" : "stat.\(label)", in: glass)
     }
 
     private func nextUp(title: String, start: Date) -> some View {
@@ -200,8 +247,10 @@ private struct ActiveFocusContent: View {
                 }
                 .font(.system(size: 14, weight: .semibold))
                 .buttonStyle(.plain)
+                .glassPop()
             }
         }
+        .animation(.bouncy(duration: 0.5), value: state.phase)
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .glassSurface(in: RoundedRectangle(cornerRadius: 18), tone: .dark)

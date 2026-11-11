@@ -90,13 +90,16 @@ final class DayStore {
     }
 
     /// Puts an inbox item into the first gap that fits on the selected day.
-    func schedule(_ item: InboxItem) {
+    @discardableResult
+    func schedule(_ item: InboxItem) -> TimeBlock {
         let day = selectedDate
         let window = DateInterval(start: hour(8, on: day), end: hour(22, on: day))
         let gap = gaps(on: day, in: window).first { $0.duration >= item.estimate }
         let start = gap?.start ?? (blocks(on: day).last?.end ?? hour(9, on: day))
-        add(TimeBlock(title: item.title, start: start, end: start.addingTimeInterval(item.estimate), category: .life))
+        let block = TimeBlock(title: item.title, start: start, end: start.addingTimeInterval(item.estimate), category: .life)
+        add(block)
         inbox.removeAll { $0.id == item.id }
+        return block
     }
 
     // MARK: Focus

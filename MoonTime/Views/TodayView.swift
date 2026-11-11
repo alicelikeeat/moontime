@@ -83,6 +83,7 @@ private struct Chip: View {
 
 private struct WeekStrip: View {
     @Environment(DayStore.self) private var store
+    @Namespace private var lens
 
     private var days: [Date] {
         var calendar = Calendar(identifier: .gregorian)
@@ -99,7 +100,9 @@ private struct WeekStrip: View {
                 let selected = Calendar.current.isDate(day, inSameDayAs: store.selectedDate)
                 let weekend = index >= 5
                 Button {
-                    store.selectedDate = Calendar.current.startOfDay(for: day)
+                    withAnimation(.bouncy(duration: 0.5, extraBounce: 0.1)) {
+                        store.selectedDate = Calendar.current.startOfDay(for: day)
+                    }
                 } label: {
                     VStack(spacing: 2) {
                         Text(symbols[index])
@@ -110,7 +113,14 @@ private struct WeekStrip: View {
                             .foregroundStyle(selected ? .white : (weekend ? Palette.secondaryLabel : Palette.label))
                     }
                     .frame(maxWidth: .infinity, minHeight: 56)
-                    .background(selected ? Palette.accent : .clear, in: RoundedRectangle(cornerRadius: 14))
+                    .background {
+                        if selected {
+                            // Tinted glass lens that slides to the picked day.
+                            Color.clear
+                                .glassSurface(in: RoundedRectangle(cornerRadius: 16), tint: Palette.accent, interactive: true)
+                                .matchedGeometryEffect(id: "day-lens", in: lens)
+                        }
+                    }
                     .contentShape(RoundedRectangle(cornerRadius: 14))
                 }
                 .buttonStyle(.plain)
