@@ -46,10 +46,13 @@ extension View {
     /// Follows the appearance setting. `tint` is used as-is (pass a low
     /// opacity for a subtle tint) and replaces the frost tint.
     /// `elevated: false` drops the outline and shadow, for dense content like time blocks.
+    /// `chrome: true` marks floating controls (tab bar, messages) that stay
+    /// glass even when the scheme draws content cards flat.
     func glassSurface<S: Shape>(
-        in shape: S, tint: Color? = nil, interactive: Bool = false, tone: GlassTone = .light, elevated: Bool = true
+        in shape: S, tint: Color? = nil, interactive: Bool = false, tone: GlassTone = .light,
+        elevated: Bool = true, chrome: Bool = false
     ) -> some View {
-        modifier(GlassSurface(shape: shape, tint: tint, interactive: interactive, tone: tone, elevated: elevated))
+        modifier(GlassSurface(shape: shape, tint: tint, interactive: interactive, tone: tone, elevated: elevated, chrome: chrome))
     }
 }
 
@@ -59,6 +62,7 @@ private struct GlassSurface<S: Shape>: ViewModifier {
     let interactive: Bool
     let tone: GlassTone
     var elevated = true
+    var chrome = false
     @Environment(\.glassAppearance) private var look
 
     private var frostColor: Color {
@@ -66,7 +70,12 @@ private struct GlassSurface<S: Shape>: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
+        if Palette.flatContent && !interactive && !chrome {
+            // Minimal scheme: content sits on flat grey, glass is for controls.
+            content.background {
+                shape.fill(tint ?? (tone == .light ? Palette.surface : Color.white.opacity(0.06)))
+            }
+        } else if #available(iOS 26.0, *) {
             content
                 .glassEffect(liquidGlass, in: shape)
                 .background { if elevated { edgeShadow } }

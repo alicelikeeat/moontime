@@ -116,7 +116,7 @@ struct RootView: View {
                     }
                     .padding(.horizontal, 16)
                     .frame(height: 38)
-                    .glassSurface(in: Capsule())
+                    .glassSurface(in: Capsule(), chrome: true)
                     .glassID("toast", in: glass)
                     .glassPop(anchor: .bottomLeading)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -167,12 +167,12 @@ struct RootView: View {
                     Button(action: toggleMenu) {
                         Image(systemName: "plus")
                             .font(.system(size: 19, weight: .semibold))
-                            .foregroundStyle(Palette.onAccent)
+                            .foregroundStyle(Palette.label)
                             .rotationEffect(.degrees(menuOpen ? 45 : 0))
                             .frame(width: 56, height: 56)
                             .contentShape(Circle())
                     }
-                    .systemGlassButton(prominent: !Palette.monochrome, tint: Palette.accentFill, shape: Circle())
+                    .systemGlassButton(prominent: false, tint: nil, shape: Circle())
                     .glassID("fab", in: glass)
                     .accessibilityLabel(menuOpen ? "关闭菜单" : "快捷操作")
                     .accessibilityIdentifier("new-block")
@@ -206,44 +206,79 @@ struct RootView: View {
     }
 }
 
+/// Tab bar with a glass lens you can drag across the tabs; it snaps to the
+/// nearest one on release. Tapping a tab still works.
 struct FloatingTabBar: View {
     @Binding var selection: AppTab
     var glass: Namespace.ID
-    @Namespace private var indicator
+    /// Lens centre while the finger is sliding; nil when resting.
+    @State private var dragX: CGFloat?
+
+    private let tabs = AppTab.allCases
 
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(AppTab.allCases, id: \.self) { tab in
-                let selected = tab == selection
-                Button {
-                    withAnimation(.bouncy(duration: 0.4)) { selection = tab }
-                } label: {
-                    VStack(spacing: 2) {
-                        Image(systemName: tab.symbol)
-                            .font(.system(size: 17, weight: .medium))
-                            .symbolEffect(.bounce.down, value: selected)
-                        Text(tab.title)
-                            .font(.mtMicro)
+        GeometryReader { geo in
+            let itemWidth = geo.size.width / CGFloat(tabs.count)
+            let selectedIndex = CGFloat(tabs.firstIndex(of: selection) ?? 0)
+            let lensX = dragX ?? (selectedIndex + 0.5) * itemWidth
+            let hovered = min(tabs.count - 1, max(0, Int(lensX / itemWidth)))
+            let sliding = dragX != nil
+
+            ZStack(alignment: .topLeading) {
+                Color.clear
+                    .glassSurface(in: Capsule(style: .continuous), tint: Palette.accent.opacity(0.08), interactive: true, chrome: true)
+                    .frame(width: itemWidth, height: geo.size.height)
+                    .scaleEffect(sliding ? 1.12 : 1)
+                    .position(x: lensX, y: geo.size.height / 2)
+                    .allowsHitTesting(false)
+
+                HStack(spacing: 0) {
+                    ForEach(Array(tabs.enumerated()), id: \.element) { index, tab in
+                        let lit = index == hovered
+                        Button {
+                            withAnimation(.bouncy(duration: 0.4, extraBounce: 0.1)) { selection = tab }
+                        } label: {
+                            VStack(spacing: 2) {
+                                Image(systemName: tab.symbol)
+                                    .font(.system(size: 17, weight: .medium))
+                                    .symbolEffect(.bounce.down, value: tab == selection)
+                                Text(tab.title)
+                                    .font(.mtMicro)
+                            }
+                            .foregroundStyle(lit ? Palette.accent : Palette.secondaryLabel)
+                            .scaleEffect(lit && sliding ? 1.08 : 1)
+                            .frame(width: itemWidth, height: geo.size.height)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.pressScale)
+                        .accessibilityAddTraits(tab == selection ? .isSelected : [])
+                        .accessibilityIdentifier("tab.\(tab)")
                     }
-                    .foregroundStyle(selected ? Palette.accent : Palette.tertiaryLabel)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background {
-                        if selected {
-                            // A liquid lens that slides to the selected tab.
-                            SelectionLens().matchedGeometryEffect(id: "lens", in: indicator)
+                }
+            }
+            .animation(.snappy(duration: 0.18), value: hovered)
+            .sensoryFeedback(.selection, trigger: hovered)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 6)
+                    .onChanged { value in
+                        let half = itemWidth / 2
+                        withAnimation(.interactiveSpring(response: 0.25, dampingFraction: 0.8)) {
+                            dragX = min(max(value.location.x, half), geo.size.width - half)
                         }
                     }
-                    .contentShape(Capsule())
-                }
-                .buttonStyle(.pressScale)
-                .accessibilityAddTraits(selected ? .isSelected : [])
-                .accessibilityIdentifier("tab.\(tab)")
-            }
+                    .onEnded { value in
+                        let index = min(tabs.count - 1, max(0, Int(value.location.x / itemWidth)))
+                        withAnimation(.bouncy(duration: 0.45, extraBounce: 0.12)) {
+                            selection = tabs[index]
+                            dragX = nil
+                        }
+                    }
+            )
         }
         .padding(4)
         .frame(maxWidth: .infinity)
         .frame(height: 56)
-        .glassSurface(in: Capsule(), interactive: true)
+        .glassSurface(in: Capsule(), interactive: true, chrome: true)
         .glassID("tabbar", in: glass)
     }
 }

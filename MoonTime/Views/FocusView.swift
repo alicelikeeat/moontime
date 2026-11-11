@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Glass on the focus screen follows its background: light in the white scheme.
-private var focusTone: GlassTone { Palette.monochrome ? .light : .dark }
+private var focusTone: GlassTone { Palette.focusIsDark ? .dark : .light }
 
 struct FocusView: View {
     @Environment(DayStore.self) private var store
@@ -24,7 +24,7 @@ struct FocusView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(AmbientBackground(dark: true))
         .foregroundStyle(Palette.focusForeground)
-        .preferredColorScheme(Palette.monochrome ? .light : .dark)
+        .preferredColorScheme(Palette.focusIsDark ? .dark : .light)
     }
 
     private var topBar: some View {
@@ -64,6 +64,7 @@ struct FocusView: View {
                 } label: {
                     Text("开始：\(block.title)")
                         .font(.mtTitle)
+                        .foregroundStyle(Palette.onFocusAccent)
                         .frame(maxWidth: .infinity, minHeight: 48)
                         .glassSurface(in: Capsule(), tint: Palette.focusAccentFill, interactive: true, tone: focusTone)
                 }
@@ -163,6 +164,7 @@ private struct ActiveFocusContent: View {
                     Button(action: finish) {
                         Label("完成", systemImage: "checkmark")
                             .font(.mtTitle)
+                            .foregroundStyle(Palette.onFocusAccent)
                             .frame(maxWidth: .infinity, minHeight: 50)
                             .glassSurface(in: Capsule(), tint: Palette.focusAccentFill, interactive: true, tone: focusTone)
                             .glassUnion(state.isPaused ? "finish" : "controls", in: glass)
