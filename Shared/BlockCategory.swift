@@ -17,7 +17,7 @@ enum BlockCategory: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var fill: Color {
         if Palette.monochrome { return .white }
-        switch self {
+        return switch self {
         case .planning: Color(hex: 0xEEE6FB)
         case .deepWork: Color(hex: 0xDCEAFF)
         case .meeting: Color(hex: 0xFFE9D6)
@@ -29,7 +29,7 @@ enum BlockCategory: String, Codable, CaseIterable, Identifiable, Hashable {
     /// Text color for titles on top of `fill`.
     var title: Color {
         if Palette.monochrome { return Palette.label }
-        switch self {
+        return switch self {
         case .planning: Color(hex: 0x5B2EA6)
         case .deepWork: Color(hex: 0x0B3570)
         case .meeting: Color(hex: 0x6B2F00)
@@ -41,7 +41,7 @@ enum BlockCategory: String, Codable, CaseIterable, Identifiable, Hashable {
     /// Text color for secondary lines on top of `fill`.
     var detail: Color {
         if Palette.monochrome { return Palette.secondaryLabel }
-        switch self {
+        return switch self {
         case .planning: Color(hex: 0x6B4FA0)
         case .deepWork: Color(hex: 0x1F4E8C)
         case .meeting: Color(hex: 0x8A3D00)
