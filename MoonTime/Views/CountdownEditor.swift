@@ -35,46 +35,11 @@ struct CountdownEditor: View {
                 }
 
                 Section("图标") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 6), spacing: 10) {
-                        ForEach(Countdown.symbols, id: \.self) { symbol in
-                            let selected = draft.symbol == symbol
-                            Button {
-                                withAnimation(.bouncy) { draft.symbol = symbol }
-                            } label: {
-                                Image(systemName: symbol)
-                                    .font(.system(size: 15, weight: .medium))
-                                    .foregroundStyle(selected ? .white : draft.color)
-                                    .frame(width: 44, height: 44)
-                                    .background(selected ? draft.color : draft.color.opacity(0.1), in: Circle())
-                                    .symbolEffect(.bounce, value: selected)
-                            }
-                            .buttonStyle(.pressScale)
-                            .accessibilityLabel(symbol)
-                            .accessibilityAddTraits(selected ? .isSelected : [])
-                        }
-                    }
-                    .padding(.vertical, 4)
+                    SymbolGrid(symbols: Countdown.symbols, selection: $draft.symbol, color: draft.color)
                 }
 
                 Section("颜色") {
-                    HStack(spacing: 10) {
-                        ForEach(Countdown.colors, id: \.self) { hex in
-                            let selected = draft.colorHex == hex
-                            Button {
-                                withAnimation(.bouncy) { draft.colorHex = hex }
-                            } label: {
-                                Circle()
-                                    .fill(Color(hex: hex))
-                                    .frame(width: 28, height: 28)
-                                    .overlay(Circle().stroke(.white, lineWidth: selected ? 3 : 0).padding(2))
-                                    .frame(width: 44, height: 44)
-                                    .contentShape(Circle())
-                            }
-                            .buttonStyle(.pressScale)
-                            .accessibilityLabel("颜色")
-                            .accessibilityAddTraits(selected ? .isSelected : [])
-                        }
-                    }
+                    ColorRow(selection: $draft.colorHex)
                 }
 
                 if !isNew {

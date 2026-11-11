@@ -1,71 +1,35 @@
 import SwiftUI
 
-struct CountdownView: View {
+/// Countdown cards for the Daily tab.
+struct CountdownList: View {
     @Environment(CountdownStore.self) private var countdowns
     @Environment(ChromeState.self) private var chrome
-    var onAdd: () -> Void
     var onEdit: (Countdown) -> Void
 
     var body: some View {
         let featured = countdowns.featured
         let others = countdowns.sorted.filter { $0.id != featured?.id }
 
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(alignment: .bottom) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("\(countdowns.items.count) 个日子")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(Palette.secondaryLabel)
-                            .contentTransition(.numericText())
-                        Text("倒数日").font(.system(size: 26, weight: .bold)).tracking(-0.4)
-                    }
-                    Spacer()
-                    Button(action: onAdd) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(Palette.accent)
-                            .frame(width: 44, height: 44)
-                            .contentShape(Circle())
-                    }
-                    .systemGlassButton(shape: Circle())
-                    .accessibilityLabel("新建倒数日")
-                    .accessibilityIdentifier("countdown.add")
-                }
-                .padding(.horizontal, 4)
-
-                if let featured {
-                    FeaturedCountdownCard(countdown: featured)
-                        .onTapGesture { onEdit(featured) }
-                        .contextMenu { menu(for: featured) }
-                        .transition(.blurReplace)
-                        .id(featured.id)
-                }
-
-                ForEach(others) { item in
-                    CountdownRow(countdown: item)
-                        .onTapGesture { onEdit(item) }
-                        .contextMenu { menu(for: item) }
-                        .glassPop()
-                }
-
-                if countdowns.items.isEmpty {
-                    VStack(spacing: 8) {
-                        Image(systemName: "hourglass").font(.system(size: 28, weight: .light))
-                        Text("还没有倒数日").font(.system(size: 12))
-                    }
-                    .foregroundStyle(Palette.secondaryLabel)
-                    .frame(maxWidth: .infinity, minHeight: 160)
-                }
+        VStack(spacing: 12) {
+            if let featured {
+                FeaturedCountdownCard(countdown: featured)
+                    .onTapGesture { onEdit(featured) }
+                    .contextMenu { menu(for: featured) }
+                    .transition(.blurReplace)
+                    .id(featured.id)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 110)
+
+            ForEach(others) { item in
+                CountdownRow(countdown: item)
+                    .onTapGesture { onEdit(item) }
+                    .contextMenu { menu(for: item) }
+                    .glassPop()
+            }
+
+            if countdowns.items.isEmpty {
+                EmptyHint(symbol: "hourglass", text: "还没有倒数日，点右上角 + 添加")
+            }
         }
-        .collapsesTabBarOnScroll()
-        .safeAreaInset(edge: .top, spacing: 0) { TopScrollEdgeBlur() }
-        .background(AmbientBackground())
-        .foregroundStyle(Palette.label)
     }
 
     @ViewBuilder
@@ -78,6 +42,20 @@ struct CountdownView: View {
             withAnimation(.bouncy) { countdowns.delete(item.id) }
             chrome.show("已删除「\(item.title)」", symbol: "trash")
         }
+    }
+}
+
+struct EmptyHint: View {
+    let symbol: String
+    let text: String
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: symbol).font(.system(size: 26, weight: .light))
+            Text(text).font(.system(size: 11))
+        }
+        .foregroundStyle(Palette.secondaryLabel)
+        .frame(maxWidth: .infinity, minHeight: 160)
     }
 }
 

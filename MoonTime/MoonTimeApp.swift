@@ -4,6 +4,8 @@ import SwiftUI
 struct MoonTimeApp: App {
     @State private var store = DayStore()
     @State private var countdowns = CountdownStore()
+    @State private var habits = HabitStore()
+    @State private var alarms = AlarmStore()
     @AppStorage(GlassAppearance.backgroundKey) private var background = GlassAppearance.Background.plain
     @AppStorage(GlassAppearance.styleKey) private var glassStyle = GlassAppearance.Style.clear
     @AppStorage(GlassAppearance.frostKey) private var frost = 0.0
@@ -14,6 +16,8 @@ struct MoonTimeApp: App {
             RootView()
                 .environment(store)
                 .environment(countdowns)
+                .environment(habits)
+                .environment(alarms)
                 .environment(\.locale, Locale(identifier: "zh_Hans_CN"))
                 .environment(\.glassAppearance, GlassAppearance(background: background, style: glassStyle, frost: frost))
                 .onChange(of: scenePhase) { _, phase in

@@ -13,7 +13,10 @@ struct DayTimeline: View {
     var onTap: (TimeBlock) -> Void
     var onSchedule: () -> Void
 
-    private let firstHour = 7
+    private var firstHour: Int {
+        let earliest = blocks.map { Calendar.current.component(.hour, from: $0.start) }.min() ?? 8
+        return max(0, min(8, earliest))
+    }
     private let lastHour = 23
     private let hourHeight: CGFloat = 56
     private let blockInset: CGFloat = 56

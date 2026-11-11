@@ -21,6 +21,7 @@ targets:
         CFBundleDevelopmentRegion: zh-Hans
         UILaunchScreen: {}
         NSSupportsLiveActivities: true
+        NSAlarmKitUsageDescription: MoonTime 会在你设定的时间响铃，即使手机静音也会提醒。
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
     settings:
       base:

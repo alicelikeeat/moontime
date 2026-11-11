@@ -116,17 +116,30 @@ final class ScreenshotTests: XCTestCase {
         snap("10-island-expanded")
     }
 
-    func testCountdowns() {
+    func testDailyTab() {
         let app = XCUIApplication()
         app.launchArguments = ["-UITests"]
         app.launch()
         pause(1)
-        tapTab(app, "tab.countdown")
+        tapTab(app, "tab.life")
+        pause(1)
+        tap(app.buttons["life.habits"])
+        pause(1)
+        snap("13-habits")
+        tap(app.buttons["habit.check.早起"])
         pause(1.2)
-        snap("13-countdown")
-        tap(app.buttons["countdown.add"])
+        snap("13b-habit-checked")
+
+        tap(app.buttons["life.countdowns"])
         pause(1.2)
-        snap("14-countdown-editor")
+        snap("14-countdowns")
+
+        tap(app.buttons["life.alarms"])
+        pause(1.2)
+        snap("15-alarms")
+        tap(app.buttons["life.add"])
+        pause(1.2)
+        snap("16-alarm-editor")
         tap(app.buttons["取消"])
     }
 
