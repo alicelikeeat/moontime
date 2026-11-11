@@ -2,7 +2,7 @@ name: Unsigned IPA
 
 on:
   push:
-    branches: [main, ccr-1302873a-optmaf]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

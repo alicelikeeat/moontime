@@ -1,0 +1,59 @@
+name: Screenshots
+
+on:
+  push:
+    branches: [main, ccr-1302873a-optmaf]
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE" ]; then XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1); fi
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Boot an iPhone Pro simulator (has a Dynamic Island)
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          pick = sorted(
+              (runtime, d["name"], d["udid"])
+              for runtime, items in devices.items() if "iOS" in runtime
+              for d in items if d["name"].startswith("iPhone") and d["name"].endswith("Pro")
+          )
+          print(pick[-1][2]); print(pick[-1][:2], file=sys.stderr)')
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
+
+      - name: Run screenshot tests
+        run: |
+          set -o pipefail
+          mkdir -p shots
+          TEST_RUNNER_SCREENSHOT_DIR="$PWD/shots" xcodebuild test \
+            -project MoonTime.xcodeproj \
+            -scheme MoonTime \
+            -destination "id=$UDID" \
+            | tee test.log | grep -E "error:|Test Case|failed|passed|TEST" || true
+          ls -l shots
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: |
+            shots
+            test.log

@@ -40,3 +40,21 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.moontime.widgets
+  MoonTimeUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [MoonTimeUITests]
+    dependencies:
+      - target: MoonTime
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.moontime.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: MoonTime
+schemes:
+  MoonTime:
+    build:
+      targets:
+        MoonTime: all
+    test:
+      targets: [MoonTimeUITests]

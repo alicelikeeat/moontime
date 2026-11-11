@@ -63,6 +63,7 @@ struct RootView: View {
                                 .glassSurface(in: Circle(), tint: Palette.accent, interactive: true)
                         }
                         .accessibilityLabel("新建时间块")
+                        .accessibilityIdentifier("new-block")
                     }
                 }
                 .padding(.horizontal, 16)
@@ -102,6 +103,7 @@ struct FloatingTabBar: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
+                .accessibilityIdentifier("tab.\(tab)")
             }
         }
         .padding(4)
