@@ -97,7 +97,6 @@ private struct ActiveFocusContent: View {
     var onFinished: () -> Void
 
     @Namespace private var glass
-    @State private var statsMerged = true
 
     private var state: FocusActivityAttributes.ContentState { focus.state }
 
@@ -126,10 +125,6 @@ private struct ActiveFocusContent: View {
                     stat(value: TimeFormat.duration(state.total), label: "计划")
                     stat(value: "\(focus.pauseCount) 次", label: "暂停")
                 }
-            }
-            .task {
-                try? await Task.sleep(for: .milliseconds(300))
-                withAnimation(.bouncy(duration: 0.7, extraBounce: 0.1)) { statsMerged = false }
             }
 
             Spacer(minLength: 0)
@@ -233,7 +228,6 @@ private struct ActiveFocusContent: View {
         .frame(maxWidth: .infinity)
         .padding(12)
         .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous), tone: focusTone)
-        .glassUnion(statsMerged ? "stats" : "stat.\(label)", in: glass)
     }
 
     private func nextUp(title: String, start: Date) -> some View {

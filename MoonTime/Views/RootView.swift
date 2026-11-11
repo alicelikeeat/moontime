@@ -36,6 +36,9 @@ struct RootView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
+            // Shared page colour under every tab, so nothing dark shows through.
+            AmbientBackground()
+
             switch tab {
             case .today:
                 TodayView(
@@ -46,10 +49,10 @@ struct RootView: View {
                     onOpenFocus: { go(.focus) },
                     onOpenInbox: { go(.inbox) }
                 )
-                .transition(.opacity)
+                .transition(.identity)
             case .inbox:
                 InboxView()
-                    .transition(.opacity)
+                    .transition(.identity)
             case .focus:
                 FocusView(onClose: { go(.today) })
                     .transition(.asymmetric(
@@ -58,10 +61,10 @@ struct RootView: View {
                     ))
             case .life:
                 LifeView()
-                    .transition(.opacity)
+                    .transition(.identity)
             case .review:
                 ReviewView(onPlanTomorrow: { go(.today) })
-                    .transition(.opacity)
+                    .transition(.identity)
             }
 
             if menuOpen {
@@ -70,6 +73,10 @@ struct RootView: View {
                     .onTapGesture { toggleMenu() }
                     .transition(.opacity)
                     .accessibilityHidden(true)
+            }
+
+            if tab != .focus {
+                BottomFade()
             }
 
             // The focus screen is full-bleed, like the design.

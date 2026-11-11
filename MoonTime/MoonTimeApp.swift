@@ -13,6 +13,21 @@ struct MoonTimeApp: App {
     @AppStorage(Palette.colourKey) private var colourful = false
     @Environment(\.scenePhase) private var scenePhase
 
+    init() {
+        // Appearance defaults changed in 1.0.2 (flat content, minimal scheme);
+        // reset older saved looks once so everyone starts from the new default.
+        let defaults = UserDefaults.standard
+        if defaults.integer(forKey: "appearance.version") < 2 {
+            for key in [Palette.schemeKey, Palette.colourKey, GlassAppearance.backgroundKey,
+                        GlassAppearance.styleKey, GlassAppearance.frostKey] {
+                defaults.removeObject(forKey: key)
+            }
+            defaults.set(2, forKey: "appearance.version")
+            Palette.scheme = .minimal
+            Palette.colourful = false
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             let _ = {

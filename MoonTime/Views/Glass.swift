@@ -299,7 +299,7 @@ struct TopScrollEdgeBlur: View {
     var body: some View {
         Color.clear
             .frame(height: 0)
-            .background(.ultraThinMaterial, ignoresSafeAreaEdges: .top)
+            .background(Palette.background, ignoresSafeAreaEdges: .top)
             .accessibilityHidden(true)
     }
 }

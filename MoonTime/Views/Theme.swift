@@ -17,12 +17,12 @@ enum Metrics {
 
 /// Five type roles. Everything on screen uses one of these.
 extension Font {
-    static let mtLargeTitle = Font.system(size: 26, weight: .semibold)
-    static let mtTitle = Font.system(size: 14, weight: .semibold)
-    static let mtHeadline = Font.system(size: 12, weight: .semibold)
-    static let mtBody = Font.system(size: 12)
-    static let mtCaption = Font.system(size: 10)
-    static let mtMicro = Font.system(size: 9, weight: .medium)
+    static let mtLargeTitle = Font.system(size: 28, weight: .semibold)
+    static let mtTitle = Font.system(size: 15, weight: .semibold)
+    static let mtHeadline = Font.system(size: 13, weight: .semibold)
+    static let mtBody = Font.system(size: 13)
+    static let mtCaption = Font.system(size: 11)
+    static let mtMicro = Font.system(size: 10, weight: .medium)
     /// Large thin figures: countdowns, alarms, stats.
     static func mtNumber(_ size: CGFloat) -> Font { .system(size: size, weight: .thin) }
 }
@@ -117,19 +117,35 @@ extension View {
     }
 }
 
-/// Frosted fade behind a pinned page header; content scrolls under it.
+/// Fade behind a pinned page header, in the page's own colour (a material
+/// rendered as a grey band on device).
 struct HeaderFade: View {
     var body: some View {
-        Rectangle()
-            .fill(.ultraThinMaterial)
-            .mask(
-                LinearGradient(
-                    stops: [.init(color: .black, location: 0), .init(color: .black, location: 0.78), .init(color: .clear, location: 1)],
-                    startPoint: .top, endPoint: .bottom
-                )
-            )
-            .ignoresSafeArea(edges: .top)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
+        LinearGradient(
+            stops: [
+                .init(color: Palette.background, location: 0),
+                .init(color: Palette.background, location: 0.8),
+                .init(color: Palette.background.opacity(0), location: 1),
+            ],
+            startPoint: .top, endPoint: .bottom
+        )
+        .ignoresSafeArea(edges: .top)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+/// Content fades out above the floating tab bar instead of showing through it.
+struct BottomFade: View {
+    var body: some View {
+        LinearGradient(
+            colors: [Palette.background.opacity(0), Palette.background],
+            startPoint: .top, endPoint: .bottom
+        )
+        .frame(height: 120)
+        .frame(maxHeight: .infinity, alignment: .bottom)
+        .ignoresSafeArea(edges: .bottom)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }

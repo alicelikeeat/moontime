@@ -3,8 +3,6 @@ import SwiftUI
 struct ReviewView: View {
     @Environment(DayStore.self) private var store
     @Environment(ChromeState.self) private var chrome
-    @Namespace private var glass
-    @State private var statsMerged = true
     var onPlanTomorrow: () -> Void
 
     var body: some View {
@@ -20,7 +18,6 @@ struct ReviewView: View {
                 PageHeader(subtitle: "\(TimeFormat.monthDay(.now)) · \(TimeFormat.clock(.now))", title: "今日复盘")
                     .padding(.bottom, 8)
 
-                // Starts as one slab of glass, then splits into three cards.
                 GlassGroup(spacing: 10) {
                     HStack(spacing: 10) {
                         statCard("\(done.count)/\(blocks.count)", "完成事项")
@@ -28,27 +25,32 @@ struct ReviewView: View {
                         statCard(onPlanRate.formatted(.percent.precision(.fractionLength(0))), "按计划执行")
                     }
                 }
-                .task {
-                    try? await Task.sleep(for: .milliseconds(300))
-                    withAnimation(.bouncy(duration: 0.7, extraBounce: 0.1)) { statsMerged = false }
-                }
 
                 PlanVsActualCard(blocks: blocks)
 
-                ForEach(unfinished) { block in
-                    HStack(spacing: 12) {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("未完成").font(.mtCaption).foregroundStyle(Palette.secondaryLabel)
-                            Text(block.title).font(.mtHeadline).lineLimit(1)
-                        }
-                        Spacer(minLength: 8)
-                        PillButton(title: "移到明天") {
-                            withAnimation(.bouncy) { store.moveToTomorrow(block.id) }
-                            chrome.show("已移到明天", symbol: "arrow.turn.down.right")
+                if !unfinished.isEmpty {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("未完成 · \(unfinished.count)")
+                            .font(.mtCaption.weight(.semibold))
+                            .foregroundStyle(Palette.secondaryLabel)
+                            .padding(.bottom, 6)
+                        ForEach(Array(unfinished.enumerated()), id: \.element.id) { index, block in
+                            if index > 0 { Divider().overlay(Palette.gridLine) }
+                            HStack(spacing: 12) {
+                                Text(block.title).font(.mtBody).lineLimit(1)
+                                Spacer(minLength: 8)
+                                Button("移到明天") {
+                                    withAnimation(.snappy) { store.moveToTomorrow(block.id) }
+                                    chrome.show("已移到明天", symbol: "arrow.turn.down.right")
+                                }
+                                .font(.mtCaption.weight(.semibold))
+                                .foregroundStyle(Palette.accent)
+                                .frame(minHeight: 44)
+                                .buttonStyle(.pressScale)
+                            }
                         }
                     }
                     .card(padding: 14)
-                    .glassPop()
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
@@ -100,7 +102,6 @@ struct ReviewView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous))
-        .glassUnion(statsMerged ? "stats" : "stat.\(label)", in: glass)
     }
 }
 

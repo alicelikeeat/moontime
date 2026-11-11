@@ -16,7 +16,6 @@ enum BlockCategory: String, Codable, CaseIterable, Identifiable, Hashable {
     }
 
     var fill: Color {
-        if Palette.monochrome { return .white }
         if !Palette.usesColour { return Palette.surface }
         return switch self {
         case .planning: Color(hex: 0xEEECF8)

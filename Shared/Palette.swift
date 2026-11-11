@@ -32,8 +32,9 @@ enum Palette {
     static var monochrome: Bool { scheme == .white }
     /// Whether categories, habits and countdowns are drawn in colour.
     static var usesColour: Bool { scheme == .moon || (scheme == .minimal && colourful) }
-    /// Content cards are flat grey instead of glass.
-    static var flatContent: Bool { scheme == .minimal }
+    /// Content cards are flat; glass is reserved for floating controls.
+    /// (Large areas of glass over a light page render grey and muddy on device.)
+    static var flatContent: Bool { true }
 
     private static func pick(_ minimal: Color, _ moon: Color, _ white: Color) -> Color {
         switch scheme {
@@ -49,7 +50,7 @@ enum Palette {
     static var tertiaryLabel: Color { pick(Color(hex: 0x424242), Color(hex: 0x48484D), .black) }
     static var background: Color { pick(.white, Color(hex: 0xF8F7F4), .white) }
     /// Flat card fill (minimal scheme).
-    static var surface: Color { pick(Color(hex: 0xF4F4F4), Color(hex: 0xF2F1EE), Color(hex: 0xF4F4F4)) }
+    static var surface: Color { pick(Color(hex: 0xF4F4F4), Color(hex: 0xEFEDE8), Color(hex: 0xF4F4F4)) }
     static var gridLine: Color { pick(Color(hex: 0xEDEDED), Color(hex: 0xE8E5DF), Color(hex: 0xE5E5EA)) }
 
     // Accent
