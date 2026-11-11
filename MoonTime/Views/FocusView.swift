@@ -11,9 +11,7 @@ struct FocusView: View {
         VStack(spacing: 24) {
             topBar
             if let focus = store.focus {
-                TimelineView(.periodic(from: .now, by: 1)) { context in
-                    ActiveFocusContent(focus: focus, now: context.date, onFinished: onClose)
-                }
+                ActiveFocusContent(focus: focus, onFinished: onClose)
             } else {
                 emptyState
             }
@@ -96,7 +94,6 @@ private struct ActiveFocusContent: View {
     @Environment(DayStore.self) private var store
     @Environment(ChromeState.self) private var chrome
     let focus: ActiveFocus
-    let now: Date
     var onFinished: () -> Void
 
     @Namespace private var glass
@@ -122,7 +119,10 @@ private struct ActiveFocusContent: View {
 
             GlassGroup(spacing: 10) {
                 HStack(spacing: 10) {
-                    stat(value: "\(TimeFormat.minutes(state.elapsed(at: now))) 分", label: "已专注")
+                    // Only this card ticks, every 15 s.
+                    TimelineView(.periodic(from: .now, by: 15)) { context in
+                        stat(value: "\(TimeFormat.minutes(state.elapsed(at: context.date))) 分", label: "已专注")
+                    }
                     stat(value: TimeFormat.duration(state.total), label: "计划")
                     stat(value: "\(focus.pauseCount) 次", label: "暂停")
                 }
@@ -193,33 +193,25 @@ private struct ActiveFocusContent: View {
 
     private var ring: some View {
         ZStack {
-            // Slow breathing glow while the timer runs.
+            // Breathing glow: a radial gradient (cheap) instead of a live blur.
             Circle()
-                .fill(Palette.focusAccent.opacity(state.isPaused ? 0 : 0.22))
-                .blur(radius: 40)
+                .fill(RadialGradient(
+                    colors: [Palette.focusAccent.opacity(state.isPaused ? 0 : 0.28), .clear],
+                    center: .center, startRadius: 80, endRadius: 175
+                ))
+                .frame(width: 350, height: 350)
                 .phaseAnimator([false, true]) { glow, inhale in
-                    glow.scaleEffect(inhale ? 1.08 : 0.92).opacity(inhale ? 1 : 0.6)
+                    glow.scaleEffect(inhale ? 1.06 : 0.94).opacity(inhale ? 1 : 0.65)
                 } animation: { _ in .easeInOut(duration: 2.6) }
                 .animation(.smooth(duration: 0.6), value: state.isPaused)
+                .allowsHitTesting(false)
             Circle().stroke(Palette.focusTrack, lineWidth: 8)
             Color.clear
                 .glassSurface(in: Circle(), tone: focusTone)
                 .padding(22)
-            Circle()
-                .trim(from: 0, to: state.progress(at: now))
-                .stroke(Palette.focusAccent, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .animation(.linear(duration: 1), value: state.progress(at: now))
-            VStack(spacing: 4) {
-                Text(TimeFormat.countdown(state.remaining(at: now)))
-                    .font(.system(size: 46, weight: .thin))
-                    .monospacedDigit()
-                    .tracking(-1.5)
-                    .contentTransition(.numericText(countsDown: true))
-                    .animation(.snappy(duration: 0.35), value: Int(state.remaining(at: now)))
-                Text("剩余 · \(TimeFormat.clock(state.isPaused ? now.addingTimeInterval(state.remaining(at: now)) : state.endsAt)) 结束")
-                    .font(.mtBody)
-                    .foregroundStyle(Palette.focusSecondary)
+            // Only the progress arc and the digits redraw each second.
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                FocusDialFace(state: state, now: context.date)
             }
         }
         .frame(width: 248, height: 248)
@@ -277,5 +269,34 @@ private struct ActiveFocusContent: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous), tone: focusTone)
+    }
+}
+
+/// The parts of the focus dial that change every second.
+private struct FocusDialFace: View {
+    let state: FocusActivityAttributes.ContentState
+    let now: Date
+
+    var body: some View {
+        let remaining = state.remaining(at: now)
+        let progress = state.progress(at: now)
+        ZStack {
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(Palette.focusAccent, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .animation(.linear(duration: 1), value: progress)
+            VStack(spacing: 4) {
+                Text(TimeFormat.countdown(remaining))
+                    .font(.system(size: 46, weight: .thin))
+                    .monospacedDigit()
+                    .tracking(-1.5)
+                    .contentTransition(.numericText(countsDown: true))
+                    .animation(.snappy(duration: 0.35), value: Int(remaining))
+                Text("剩余 · \(TimeFormat.clock(state.isPaused ? now.addingTimeInterval(remaining) : state.endsAt)) 结束")
+                    .font(.mtBody)
+                    .foregroundStyle(Palette.focusSecondary)
+            }
+        }
     }
 }

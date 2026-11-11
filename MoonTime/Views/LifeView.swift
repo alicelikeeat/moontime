@@ -47,7 +47,7 @@ struct LifeView: View {
                         AlarmList(onEdit: { editingAlarm = $0 })
                     }
                 }
-                .transition(.blurReplace)
+                .transition(.opacity)
             }
             .padding(.horizontal, Metrics.page)
             .padding(.top, 8)

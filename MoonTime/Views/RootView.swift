@@ -46,10 +46,10 @@ struct RootView: View {
                     onOpenFocus: { go(.focus) },
                     onOpenInbox: { go(.inbox) }
                 )
-                .transition(.blurReplace)
+                .transition(.opacity)
             case .inbox:
                 InboxView()
-                    .transition(.blurReplace)
+                    .transition(.opacity)
             case .focus:
                 FocusView(onClose: { go(.today) })
                     .transition(.asymmetric(
@@ -58,10 +58,10 @@ struct RootView: View {
                     ))
             case .life:
                 LifeView()
-                    .transition(.blurReplace)
+                    .transition(.opacity)
             case .review:
                 ReviewView(onPlanTomorrow: { go(.today) })
-                    .transition(.blurReplace)
+                    .transition(.opacity)
             }
 
             if menuOpen {
@@ -198,7 +198,7 @@ struct RootView: View {
     }
 
     private func go(_ destination: AppTab) {
-        withAnimation(.smooth(duration: 0.38)) { tab = destination }
+        withAnimation(.smooth(duration: 0.25)) { tab = destination }
     }
 
     private func toggleMenu() {

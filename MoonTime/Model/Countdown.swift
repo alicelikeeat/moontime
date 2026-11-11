@@ -74,9 +74,11 @@ final class CountdownStore {
 
     /// Upcoming soonest first, then past ones most recent first.
     var sorted: [Countdown] {
-        let upcoming = items.filter { $0.days() >= 0 }.sorted { $0.days() < $1.days() }
-        let past = items.filter { $0.days() < 0 }.sorted { $0.days() > $1.days() }
-        return upcoming + past
+        // Work out each day count once instead of on every comparison.
+        let keyed = items.map { (item: $0, days: $0.days()) }
+        let upcoming = keyed.filter { $0.days >= 0 }.sorted { $0.days < $1.days }
+        let past = keyed.filter { $0.days < 0 }.sorted { $0.days > $1.days }
+        return (upcoming + past).map(\.item)
     }
 
     func contains(_ id: UUID) -> Bool { items.contains { $0.id == id } }

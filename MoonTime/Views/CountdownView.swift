@@ -15,7 +15,7 @@ struct CountdownList: View {
                 FeaturedCountdownCard(countdown: featured)
                     .onTapGesture { onEdit(featured) }
                     .contextMenu { menu(for: featured) }
-                    .transition(.blurReplace)
+                    .transition(.opacity)
                     .id(featured.id)
             }
 

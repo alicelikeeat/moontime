@@ -78,7 +78,6 @@ private struct GlassSurface<S: Shape>: ViewModifier {
         } else if #available(iOS 26.0, *) {
             content
                 .glassEffect(liquidGlass, in: shape)
-                .background { if elevated { edgeShadow } }
                 .overlay { if elevated { hairline } }
         } else {
             content
@@ -91,31 +90,16 @@ private struct GlassSurface<S: Shape>: ViewModifier {
                         }
                         shape.fill(tint ?? frostColor)
                     }
+                    // Shadow from the shape only, not from the text inside.
+                    .shadow(color: .black.opacity(elevated ? (tone == .light ? 0.06 : 0.3) : 0), radius: 10, y: 4)
                 }
-                .overlay {
-                    shape.stroke(
-                        LinearGradient(
-                            colors: [.white.opacity(tone == .light ? 0.95 : 0.35), .white.opacity(tone == .light ? 0.25 : 0.05)],
-                            startPoint: .top, endPoint: .bottom
-                        ),
-                        lineWidth: 1
-                    )
-                }
-                .shadow(color: .black.opacity(elevated ? (tone == .light ? 0.06 : 0.3) : 0), radius: 12, y: 6)
+                .overlay { if elevated { hairline } }
         }
     }
 
-    /// Clear glass on a white page has no visible edge, so give every piece
-    /// a soft drop shadow (drawn only from its rim, the middle stays clear)
-    /// and a hairline outline.
-    private var edgeShadow: some View {
-        shape
-            .stroke(Color.black.opacity(tone == .light ? 0.06 : 0.3), lineWidth: 6)
-            .blur(radius: 10)
-            .offset(y: 4)
-            .allowsHitTesting(false)
-    }
-
+    // Clear glass on a white page has no visible edge, so each piece gets a
+    // hairline. (A blurred rim shadow looked nice but cost a blur per card
+    // on every scroll frame.)
     private var hairline: some View {
         shape
             .stroke(tone == .light ? Color.black.opacity(0.05) : Color.white.opacity(0.1), lineWidth: 0.5)
@@ -287,6 +271,8 @@ struct AmbientBackground: View {
                     .offset(x: -110, y: 380)
             }
         }
+        // Flatten the big blurs into one bitmap instead of re-blurring on updates.
+        .drawingGroup()
         .ignoresSafeArea()
         .accessibilityHidden(true)
     }
