@@ -193,6 +193,18 @@ private struct ActiveFocusContent: View {
 
     private var ring: some View {
         ZStack {
+            Circle().stroke(Palette.focusTrack, lineWidth: 8)
+            Color.clear
+                .glassSurface(in: Circle(), tone: focusTone)
+                .padding(22)
+            // Only the progress arc and the digits redraw each second.
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                FocusDialFace(state: state, now: context.date)
+            }
+        }
+        .frame(width: 248, height: 248)
+        // In the background so its larger frame can't resize the dial.
+        .background {
             // Breathing glow: a radial gradient (cheap) instead of a live blur.
             Circle()
                 .fill(RadialGradient(
@@ -205,16 +217,7 @@ private struct ActiveFocusContent: View {
                 } animation: { _ in .easeInOut(duration: 2.6) }
                 .animation(.smooth(duration: 0.6), value: state.isPaused)
                 .allowsHitTesting(false)
-            Circle().stroke(Palette.focusTrack, lineWidth: 8)
-            Color.clear
-                .glassSurface(in: Circle(), tone: focusTone)
-                .padding(22)
-            // Only the progress arc and the digits redraw each second.
-            TimelineView(.periodic(from: .now, by: 1)) { context in
-                FocusDialFace(state: state, now: context.date)
-            }
         }
-        .frame(width: 248, height: 248)
         .accessibilityElement(children: .combine)
     }
 
