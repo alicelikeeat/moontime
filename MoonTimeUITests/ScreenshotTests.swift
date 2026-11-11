@@ -31,8 +31,8 @@ final class ScreenshotTests: XCTestCase {
         pause(2)
         snap("05-focus-running")
 
-        tap(app.buttons["tab.today"].exists ? app.buttons["tab.today"] : app.buttons["返回今天"])
-        if !app.buttons["tab.today"].exists { tap(app.buttons["返回今天"]) }
+        // The focus screen hides the tab bar; leave through its back button.
+        tap(app.buttons["返回今天"])
         pause(1)
         snap("06-today-focusing")
 

@@ -63,6 +63,17 @@ enum SampleData {
         ]
     }
 
+    /// A finished day, for the evening review screenshots.
+    static func eveningBlocks(on day: Date) -> [TimeBlock] {
+        let actuals: [TimeInterval?] = [30 * 60, 100 * 60, 48 * 60, 70 * 60, 95 * 60, nil]
+        return zip(blocks(on: day), actuals).map { block, actual in
+            var block = block
+            block.isDone = actual != nil
+            block.actualDuration = actual
+            return block
+        }
+    }
+
     static let inbox: [InboxItem] = [
         InboxItem(title: "回复投资人邮件", estimate: 30 * 60),
         InboxItem(title: "整理本周报销", estimate: 20 * 60),

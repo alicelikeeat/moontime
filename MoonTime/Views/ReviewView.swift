@@ -8,7 +8,7 @@ struct ReviewView: View {
         @Bindable var store = store
         let blocks = store.todayBlocks
         let done = blocks.filter(\.isDone)
-        let unfinished = blocks.filter { !$0.isDone && $0.end <= .now }
+        let unfinished = blocks.filter { !$0.isDone }
         let focusTime = done.filter { $0.category == .deepWork }.reduce(0) { $0 + ($1.actualDuration ?? 0) }
         let onPlanRate = blocks.isEmpty ? 0 : Double(done.count) / Double(blocks.count)
 

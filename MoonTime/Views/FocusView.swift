@@ -64,6 +64,7 @@ struct FocusView: View {
                         .frame(maxWidth: .infinity, minHeight: 56)
                         .glassSurface(in: Capsule(), tint: Palette.focusAccent, interactive: true, tone: .dark)
                 }
+                .accessibilityIdentifier("focus.start")
                 .buttonStyle(.plain)
             } else {
                 Text("今天的时间块都完成了")

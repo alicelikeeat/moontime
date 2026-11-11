@@ -16,6 +16,7 @@ final class DayStore {
     let workdayHours = 8..<17
 
     @ObservationIgnored private let calendar = Calendar.current
+    @ObservationIgnored private let isUITesting: Bool
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
     @ObservationIgnored private var reminderTask: Task<Void, Never>?
     private static let reminderNotificationID = "moontime.next-block"
@@ -23,7 +24,9 @@ final class DayStore {
     init(now: Date = .now) {
         let today = Calendar.current.startOfDay(for: now)
         selectedDate = today
-        blocks = SampleData.blocks(on: today)
+        let arguments = ProcessInfo.processInfo.arguments
+        isUITesting = arguments.contains("-UITests")
+        blocks = arguments.contains("-EveningDemo") ? SampleData.eveningBlocks(on: today) : SampleData.blocks(on: today)
         inbox = SampleData.inbox
         observeLiveActivityButtons()
     }
@@ -207,6 +210,8 @@ final class DayStore {
     }
 
     private func requestNotificationPermission() {
+        // A system permission alert would block the screenshot tests.
+        guard !isUITesting else { return }
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
