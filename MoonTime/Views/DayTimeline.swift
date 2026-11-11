@@ -76,6 +76,7 @@ struct DayTimeline: View {
                                 }
                             }
                             .contextMenu { menu(for: block) }
+                            .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .leading)))
                     }
 
                     if Calendar.current.isDateInToday(day) {
@@ -116,7 +117,7 @@ struct DayTimeline: View {
             ForEach(firstHour...lastHour, id: \.self) { hour in
                 HStack(alignment: .top, spacing: 8) {
                     Text("\(hour):00")
-                        .font(.system(size: 12))
+                        .font(.system(size: 10))
                         .foregroundStyle(Palette.secondaryLabel)
                         .frame(width: 40, alignment: .trailing)
                         .offset(y: -7)
@@ -131,11 +132,23 @@ struct DayTimeline: View {
     private func nowLine(at now: Date) -> some View {
         let offset = y(for: now)
         return HStack(spacing: 0) {
-            Circle().fill(Palette.nowLine).frame(width: 10, height: 10)
-            Rectangle().fill(Palette.nowLine).frame(height: 2)
+            Circle()
+                .fill(Palette.nowLine)
+                .frame(width: 8, height: 8)
+                .background {
+                    // Soft heartbeat around the current-time dot.
+                    Circle()
+                        .fill(Palette.nowLine.opacity(0.35))
+                        .phaseAnimator([false, true]) { ring, expanded in
+                            ring.scaleEffect(expanded ? 2.4 : 1).opacity(expanded ? 0 : 1)
+                        } animation: { expanded in
+                            expanded ? .easeOut(duration: 1.6) : .linear(duration: 0.01)
+                        }
+                }
+            Rectangle().fill(Palette.nowLine).frame(height: 1.5)
         }
-        .padding(.leading, 43)
-        .offset(y: offset - 5)
+        .padding(.leading, 44)
+        .offset(y: offset - 4)
         .opacity(offset >= 0 && offset <= CGFloat(lastHour - firstHour + 1) * hourHeight ? 1 : 0)
         .accessibilityHidden(true)
     }
@@ -145,12 +158,12 @@ struct DayTimeline: View {
             Text(inboxCount > 0
                  ? "空闲 \(TimeFormat.duration(slot.duration)) · 收件箱里有 \(inboxCount) 件事"
                  : "空闲 \(TimeFormat.duration(slot.duration))")
-                .font(.system(size: 13))
+                .font(.system(size: 11))
                 .foregroundStyle(Palette.freeSlotText)
             Spacer()
             if inboxCount > 0 {
                 Button("安排", action: onSchedule)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Palette.accent)
                     .frame(minHeight: 44)
             }
@@ -225,11 +238,11 @@ struct BlockCard: View {
         HStack(spacing: 6) {
             if block.isDone {
                 Image(systemName: "checkmark")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(category.title)
             }
             Text(block.displayTitle)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(category.title)
                 .strikethrough(block.isDone)
                 .lineLimit(1)
@@ -237,7 +250,7 @@ struct BlockCard: View {
             Text(block.isDone
                  ? TimeFormat.clock(block.start)
                  : "\(TimeFormat.clock(block.start)) · \(TimeFormat.duration(block.duration))")
-                .font(.system(size: 12))
+                .font(.system(size: 10))
                 .foregroundStyle(category.detail)
         }
         .padding(.horizontal, 10)
@@ -247,7 +260,7 @@ struct BlockCard: View {
     private var regularCard: some View {
         VStack(alignment: .leading, spacing: 2) {
             if height >= 70 {
-                Text(timeRange).font(.system(size: 12)).foregroundStyle(category.detail)
+                Text(timeRange).font(.system(size: 10)).foregroundStyle(category.detail)
             }
             Text(block.displayTitle)
                 .font(.system(size: height >= 70 ? 15 : 14, weight: height >= 70 ? .bold : .semibold))
@@ -256,10 +269,10 @@ struct BlockCard: View {
                 .lineLimit(1)
             if height >= 70 {
                 if let note = block.note {
-                    Text(note).font(.system(size: 12)).foregroundStyle(category.detail).lineLimit(1)
+                    Text(note).font(.system(size: 10)).foregroundStyle(category.detail).lineLimit(1)
                 }
             } else {
-                Text(timeRange).font(.system(size: 12)).foregroundStyle(category.detail)
+                Text(timeRange).font(.system(size: 10)).foregroundStyle(category.detail)
             }
         }
         .padding(.horizontal, 12)
@@ -270,20 +283,20 @@ struct BlockCard: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
                 Text(focus.state.isPaused ? "已暂停" : "进行中")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
                     .background(Palette.accent, in: Capsule())
-                Text(timeRange).font(.system(size: 12)).foregroundStyle(category.detail)
+                Text(timeRange).font(.system(size: 10)).foregroundStyle(category.detail)
             }
             Text(block.displayTitle)
-                .font(.system(size: 16, weight: .bold))
+                .font(.system(size: 13, weight: .bold))
                 .foregroundStyle(category.title)
                 .lineLimit(2)
             TimelineView(.periodic(from: .now, by: 30)) { context in
                 Text("已专注 \(TimeFormat.minutes(focus.state.elapsed(at: context.date))) 分钟")
-                    .font(.system(size: 13))
+                    .font(.system(size: 11))
                     .foregroundStyle(category.detail)
             }
         }
@@ -327,12 +340,12 @@ private struct BlockActions: View {
     ) -> some View {
         Button(action: run) {
             Image(systemName: symbol)
-                .font(.system(size: 17, weight: .semibold))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(color)
                 .frame(width: 46, height: 46)
                 .glassSurface(in: Circle(), tint: tint, interactive: true)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressScale)
         .accessibilityLabel(label)
         .accessibilityIdentifier(id)
     }

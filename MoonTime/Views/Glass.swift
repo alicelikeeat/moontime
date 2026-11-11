@@ -131,7 +131,7 @@ extension View {
                 buttonStyle(.glass).tint(tint).buttonBorderShape(.capsule)
             }
         } else {
-            buttonStyle(.plain).glassSurface(in: shape, tint: tint, interactive: true)
+            buttonStyle(.pressScale).glassSurface(in: shape, tint: tint, interactive: true)
         }
     }
 }
@@ -172,14 +172,20 @@ extension View {
         }
     }
 
-    /// Glass that materializes in and out; a springy scale on older systems.
+    /// Glass that materializes in and out with a springy scale.
+    /// `delay` staggers a group; `anchor` is where it grows from.
     @ViewBuilder
-    func glassPop() -> some View {
+    func glassPop(delay: Double = 0, anchor: UnitPoint = .center) -> some View {
+        let pop = AnyTransition.asymmetric(
+            insertion: .scale(scale: 0.5, anchor: anchor).combined(with: .opacity)
+                .animation(.bouncy(duration: 0.45, extraBounce: 0.12).delay(delay)),
+            removal: .scale(scale: 0.7, anchor: anchor).combined(with: .opacity)
+                .animation(.snappy(duration: 0.22))
+        )
         if #available(iOS 26.0, *) {
-            glassEffectTransition(.materialize)
-                .transition(.scale(scale: 0.6).combined(with: .opacity))
+            glassEffectTransition(.materialize).transition(pop)
         } else {
-            transition(.scale(scale: 0.6).combined(with: .opacity))
+            transition(pop)
         }
     }
 }
@@ -286,4 +292,18 @@ struct TopScrollEdgeBlur: View {
             .background(.ultraThinMaterial, ignoresSafeAreaEdges: .top)
             .accessibilityHidden(true)
     }
+}
+
+/// Buttons sink slightly while pressed and spring back.
+struct PressScaleStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.94 : 1)
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .animation(.snappy(duration: 0.18), value: configuration.isPressed)
+    }
+}
+
+extension ButtonStyle where Self == PressScaleStyle {
+    static var pressScale: PressScaleStyle { PressScaleStyle() }
 }

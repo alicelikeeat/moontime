@@ -46,10 +46,12 @@ struct TodayView: View {
     private func header(for day: Date) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("\(TimeFormat.monthDay(day)) \(TimeFormat.weekday(day))")
-                .font(.system(size: 15, weight: .semibold))
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(Palette.secondaryLabel)
             Text(relativeTitle(for: day))
-                .font(.system(size: 34, weight: .bold))
+                .font(.system(size: 26, weight: .bold))
+                .tracking(-0.4)
+                .contentTransition(.interpolate)
         }
     }
 
@@ -74,10 +76,12 @@ private struct Chip: View {
     let text: String
     var body: some View {
         Text(text)
-            .font(.system(size: 13, weight: .semibold))
+            .font(.system(size: 10, weight: .semibold))
+            .monospacedDigit()
             .foregroundStyle(Palette.tertiaryLabel)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .contentTransition(.numericText())
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
             .glassSurface(in: Capsule(), tint: .white.opacity(0.35))
     }
 }
@@ -107,13 +111,13 @@ private struct WeekStrip: View {
                 } label: {
                     VStack(spacing: 2) {
                         Text(symbols[index])
-                            .font(.system(size: 12))
+                            .font(.system(size: 10))
                             .foregroundStyle(selected ? .white : Palette.secondaryLabel)
                         Text("\(Calendar.current.component(.day, from: day))")
-                            .font(.system(size: 17, weight: selected ? .bold : .semibold))
+                            .font(.system(size: 13, weight: selected ? .bold : .semibold))
                             .foregroundStyle(selected ? .white : (weekend ? Palette.secondaryLabel : Palette.label))
                     }
-                    .frame(maxWidth: .infinity, minHeight: 56)
+                    .frame(maxWidth: .infinity, minHeight: 46)
                     .background {
                         if selected {
                             // Tinted glass lens that slides to the picked day.
@@ -124,7 +128,7 @@ private struct WeekStrip: View {
                     }
                     .contentShape(RoundedRectangle(cornerRadius: 14))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressScale)
                 .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }

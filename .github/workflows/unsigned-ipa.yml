@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version for an official release, e.g. 1.0.0 (empty = prerelease build)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -63,10 +68,21 @@ jobs:
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
         run: |
-          TAG="v0.1.0-unsigned.${{ github.run_number }}"
-          gh release create "$TAG" MoonTime-unsigned.ipa \
-            --target "${{ github.sha }}" \
-            --prerelease \
-            --title "MoonTime $TAG（未签名）" \
-            --notes "未签名 IPA，需要用 AltStore、Sideloadly 或自己的证书重新签名后才能安装。构建自 ${{ github.sha }}。"
+          if [ -n "$VERSION" ]; then
+            TAG="v$VERSION"
+            cp MoonTime-unsigned.ipa "MoonTime-$VERSION-unsigned.ipa"
+            gh release create "$TAG" "MoonTime-$VERSION-unsigned.ipa" \
+              --target "${{ github.sha }}" \
+              --latest \
+              --title "MoonTime $VERSION" \
+              --notes-file RELEASE_NOTES.md
+          else
+            TAG="v0.1.0-unsigned.${{ github.run_number }}"
+            gh release create "$TAG" MoonTime-unsigned.ipa \
+              --target "${{ github.sha }}" \
+              --prerelease \
+              --title "MoonTime $TAG（未签名）" \
+              --notes "未签名 IPA，需要用 AltStore、Sideloadly 或自己的证书重新签名后才能安装。构建自 ${{ github.sha }}。"
+          fi

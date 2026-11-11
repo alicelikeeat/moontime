@@ -9,15 +9,15 @@ struct InboxView: View {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("安排到 \(TimeFormat.monthDay(store.selectedDate))的空闲时间")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(Palette.secondaryLabel)
-                    Text("收件箱").font(.system(size: 34, weight: .bold))
+                    Text("收件箱").font(.system(size: 26, weight: .bold))
                 }
                 .padding(.horizontal, 4)
 
                 if store.inbox.isEmpty {
                     Text("收件箱已清空")
-                        .font(.system(size: 15))
+                        .font(.system(size: 12))
                         .foregroundStyle(Palette.secondaryLabel)
                         .frame(maxWidth: .infinity, minHeight: 120)
                 }
@@ -25,9 +25,9 @@ struct InboxView: View {
                 ForEach(store.inbox) { item in
                     HStack(spacing: 10) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(item.title).font(.system(size: 15, weight: .semibold))
+                            Text(item.title).font(.system(size: 12, weight: .semibold))
                             Text("预计 \(TimeFormat.duration(item.estimate))")
-                                .font(.system(size: 12))
+                                .font(.system(size: 10))
                                 .foregroundStyle(Palette.secondaryLabel)
                         }
                         Spacer()
@@ -38,12 +38,12 @@ struct InboxView: View {
                                 chrome.show("已安排到 \(TimeFormat.clock(scheduled.start))", symbol: "calendar.badge.plus")
                             }
                         }
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(Palette.softAccentText)
                             .padding(.horizontal, 14)
                             .frame(minHeight: 36)
                             .glassSurface(in: Capsule(), tint: Palette.accent.opacity(0.14), interactive: true)
-                            .buttonStyle(.plain)
+                            .buttonStyle(.pressScale)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)

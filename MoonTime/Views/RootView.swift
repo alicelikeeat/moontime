@@ -38,17 +38,24 @@ struct RootView: View {
                 TodayView(
                     onStartFocus: { block in
                         store.startFocus(block)
-                        tab = .focus
+                        go(.focus)
                     },
-                    onOpenFocus: { tab = .focus },
-                    onOpenInbox: { tab = .inbox }
+                    onOpenFocus: { go(.focus) },
+                    onOpenInbox: { go(.inbox) }
                 )
+                .transition(.blurReplace)
             case .inbox:
                 InboxView()
+                    .transition(.blurReplace)
             case .focus:
-                FocusView(onClose: { tab = .today })
+                FocusView(onClose: { go(.today) })
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .move(edge: .bottom).combined(with: .opacity)
+                    ))
             case .review:
-                ReviewView(onPlanTomorrow: { tab = .today })
+                ReviewView(onPlanTomorrow: { go(.today) })
+                    .transition(.blurReplace)
             }
 
             if menuOpen {
@@ -67,6 +74,9 @@ struct RootView: View {
             }
         }
         .environment(chrome)
+        .sensoryFeedback(.selection, trigger: tab)
+        .sensoryFeedback(.impact(weight: .light), trigger: menuOpen)
+        .sensoryFeedback(.success, trigger: chrome.toast?.id) { _, new in new != nil }
         .onChange(of: tab) {
             chrome.setTabBarCollapsed(false)
             if menuOpen { toggleMenu() }
@@ -90,39 +100,40 @@ struct RootView: View {
                 if let toast = chrome.toast {
                     HStack(spacing: 8) {
                         Image(systemName: toast.symbol)
-                            .font(.system(size: 15, weight: .bold))
+                            .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(Palette.accent)
+                            .symbolEffect(.bounce, value: toast.id)
                         Text(toast.text)
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(Palette.label)
                             .lineLimit(1)
                     }
-                    .padding(.horizontal, 18)
-                    .frame(height: 46)
+                    .padding(.horizontal, 16)
+                    .frame(height: 38)
                     .glassSurface(in: Capsule())
                     .glassID("toast", in: glass)
-                    .glassPop()
+                    .glassPop(anchor: .bottomLeading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .accessibilityIdentifier("toast")
                 }
 
                 if menuOpen {
-                    menuItem("新建时间块", symbol: "square.and.pencil", id: "fab.new") {
+                    menuItem("新建时间块", symbol: "square.and.pencil", id: "fab.new", order: 3) {
                         toggleMenu()
                         showingNewBlock = true
                     }
-                    menuItem("开始专注", symbol: "timer", id: "fab.focus") {
+                    menuItem("开始专注", symbol: "timer", id: "fab.focus", order: 2) {
                         toggleMenu()
                         if store.focus == nil, let block = store.suggestedFocusBlock() {
                             store.startFocus(block)
                         }
-                        tab = .focus
+                        go(.focus)
                     }
-                    menuItem("从收件箱安排", symbol: "tray", id: "fab.inbox") {
+                    menuItem("从收件箱安排", symbol: "tray", id: "fab.inbox", order: 1) {
                         toggleMenu()
-                        tab = .inbox
+                        go(.inbox)
                     }
-                    menuItem("外观", symbol: "paintbrush", id: "fab.appearance") {
+                    menuItem("外观", symbol: "paintbrush", id: "fab.appearance", order: 0) {
                         toggleMenu()
                         showingAppearance = true
                     }
@@ -134,13 +145,13 @@ struct RootView: View {
                             chrome.setTabBarCollapsed(false)
                         } label: {
                             Image(systemName: tab.symbol)
-                                .font(.system(size: 22, weight: .medium))
+                                .font(.system(size: 18, weight: .medium))
                                 .foregroundStyle(Palette.accent)
-                                .frame(width: 64, height: 64)
+                                .frame(width: 56, height: 56)
                                 .glassSurface(in: Circle(), interactive: true)
                                 .glassID("tabbar", in: glass)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.pressScale)
                         .accessibilityLabel("展开标签栏")
                         .accessibilityIdentifier("tabbar.collapsed")
                     } else {
@@ -149,10 +160,10 @@ struct RootView: View {
                     Spacer(minLength: 12)
                     Button(action: toggleMenu) {
                         Image(systemName: "plus")
-                            .font(.system(size: 24, weight: .semibold))
+                            .font(.system(size: 19, weight: .semibold))
                             .foregroundStyle(.white)
                             .rotationEffect(.degrees(menuOpen ? 45 : 0))
-                            .frame(width: 64, height: 64)
+                            .frame(width: 56, height: 56)
                             .contentShape(Circle())
                     }
                     .systemGlassButton(prominent: true, tint: Palette.accent, shape: Circle())
@@ -164,19 +175,24 @@ struct RootView: View {
         }
     }
 
-    private func menuItem(_ title: String, symbol: String, id: String, action: @escaping () -> Void) -> some View {
+    /// `order` 0 sits next to the + button and appears first.
+    private func menuItem(_ title: String, symbol: String, id: String, order: Int, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Label(title, systemImage: symbol)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Palette.label)
-                .padding(.horizontal, 20)
-                .frame(height: 52)
+                .padding(.horizontal, 18)
+                .frame(height: 44)
                 .contentShape(Capsule())
         }
         .systemGlassButton(shape: Capsule())
         .glassID(id, in: glass)
-        .glassPop()
+        .glassPop(delay: Double(order) * 0.04, anchor: .bottomTrailing)
         .accessibilityIdentifier(id)
+    }
+
+    private func go(_ destination: AppTab) {
+        withAnimation(.smooth(duration: 0.38)) { tab = destination }
     }
 
     private func toggleMenu() {
@@ -198,9 +214,10 @@ struct FloatingTabBar: View {
                 } label: {
                     VStack(spacing: 2) {
                         Image(systemName: tab.symbol)
-                            .font(.system(size: 19, weight: .medium))
+                            .font(.system(size: 17, weight: .medium))
+                            .symbolEffect(.bounce.down, value: selected)
                         Text(tab.title)
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(.system(size: 9, weight: .semibold))
                     }
                     .foregroundStyle(selected ? Palette.accent : Palette.tertiaryLabel)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -215,14 +232,14 @@ struct FloatingTabBar: View {
                     }
                     .contentShape(Capsule())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressScale)
                 .accessibilityAddTraits(selected ? .isSelected : [])
                 .accessibilityIdentifier("tab.\(tab)")
             }
         }
         .padding(4)
-        .frame(maxWidth: 278)
-        .frame(height: 64)
+        .frame(maxWidth: 264)
+        .frame(height: 56)
         .glassSurface(in: Capsule(), interactive: true)
         .glassID("tabbar", in: glass)
     }

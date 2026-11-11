@@ -28,11 +28,11 @@ struct FocusView: View {
         HStack {
             Button(action: onClose) {
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .frame(width: 44, height: 44)
                     .glassSurface(in: Circle(), interactive: true, tone: .dark)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressScale)
             .accessibilityLabel("返回今天")
 
             Spacer()
@@ -51,24 +51,24 @@ struct FocusView: View {
         VStack(spacing: 16) {
             Spacer()
             Image(systemName: "moon.stars")
-                .font(.system(size: 48))
+                .font(.system(size: 40))
                 .foregroundStyle(Palette.moon)
             Text("还没有进行中的专注")
-                .font(.system(size: 20, weight: .bold))
+                .font(.system(size: 16, weight: .bold))
             if let block = store.suggestedFocusBlock() {
                 Button {
                     store.startFocus(block)
                 } label: {
                     Text("开始：\(block.title)")
-                        .font(.system(size: 17, weight: .semibold))
-                        .frame(maxWidth: .infinity, minHeight: 56)
+                        .font(.system(size: 13, weight: .semibold))
+                        .frame(maxWidth: .infinity, minHeight: 48)
                         .glassSurface(in: Capsule(), tint: Palette.focusAccent, interactive: true, tone: .dark)
                 }
                 .accessibilityIdentifier("focus.start")
-                .buttonStyle(.plain)
+                .buttonStyle(.pressScale)
             } else {
                 Text("今天的时间块都完成了")
-                    .font(.system(size: 15))
+                    .font(.system(size: 12))
                     .foregroundStyle(Palette.focusSecondary)
             }
             Spacer()
@@ -79,8 +79,8 @@ struct FocusView: View {
 private struct BadgeLabelStyle: LabelStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack(spacing: 6) {
-            configuration.icon.font(.system(size: 13)).foregroundStyle(Palette.moon)
-            configuration.title.font(.system(size: 13, weight: .semibold))
+            configuration.icon.font(.system(size: 11)).foregroundStyle(Palette.moon)
+            configuration.title.font(.system(size: 11, weight: .semibold))
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
@@ -104,11 +104,12 @@ private struct ActiveFocusContent: View {
         VStack(spacing: 24) {
             VStack(spacing: 6) {
                 Text(focus.category.name)
-                    .font(.system(size: 13, weight: .semibold))
-                    .tracking(1)
+                    .font(.system(size: 10, weight: .semibold))
+                    .tracking(2)
                     .foregroundStyle(Palette.focusSecondary)
                 Text(focus.title)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.system(size: 17, weight: .semibold))
+                    .tracking(-0.2)
                     .multilineTextAlignment(.center)
             }
             .padding(.top, 8)
@@ -135,8 +136,9 @@ private struct ActiveFocusContent: View {
                 HStack(spacing: state.isPaused ? 12 : 2) {
                     Button(action: store.togglePause) {
                         Label(state.isPaused ? "继续" : "暂停", systemImage: state.isPaused ? "play.fill" : "pause.fill")
-                            .font(.system(size: 17, weight: .semibold))
-                            .frame(maxWidth: .infinity, minHeight: 56)
+                            .font(.system(size: 13, weight: .semibold))
+                            .contentTransition(.symbolEffect(.replace))
+                            .frame(maxWidth: .infinity, minHeight: 50)
                             .glassSurface(in: Capsule(), interactive: true, tone: .dark)
                             .glassUnion(state.isPaused ? "pause" : "controls", in: glass)
                             .glassID("pause", in: glass)
@@ -146,8 +148,8 @@ private struct ActiveFocusContent: View {
                     if state.isPaused {
                         Button(action: store.extendFocus) {
                             Text("+15")
-                                .font(.system(size: 17, weight: .semibold))
-                                .frame(width: 72, height: 56)
+                                .font(.system(size: 13, weight: .semibold))
+                                .frame(width: 64, height: 50)
                                 .glassSurface(in: Capsule(), interactive: true, tone: .dark)
                                 .glassID("extend", in: glass)
                         }
@@ -157,17 +159,18 @@ private struct ActiveFocusContent: View {
 
                     Button(action: finish) {
                         Label("完成", systemImage: "checkmark")
-                            .font(.system(size: 17, weight: .semibold))
-                            .frame(maxWidth: .infinity, minHeight: 56)
+                            .font(.system(size: 13, weight: .semibold))
+                            .frame(maxWidth: .infinity, minHeight: 50)
                             .glassSurface(in: Capsule(), tint: Palette.focusAccent, interactive: true, tone: .dark)
                             .glassUnion(state.isPaused ? "finish" : "controls", in: glass)
                             .glassID("finish", in: glass)
                     }
                     .accessibilityIdentifier("focus.finish")
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressScale)
             }
             .animation(.bouncy(duration: 0.55, extraBounce: 0.12), value: state.isPaused)
+            .sensoryFeedback(.impact(flexibility: .soft), trigger: state.isPaused)
 
             if let nextTitle = state.nextTitle, let nextStart = state.nextStart {
                 nextUp(title: nextTitle, start: nextStart)
@@ -185,32 +188,47 @@ private struct ActiveFocusContent: View {
 
     private var ring: some View {
         ZStack {
-            Circle().stroke(.white.opacity(0.1), lineWidth: 14)
+            // Slow breathing glow while the timer runs.
+            Circle()
+                .fill(Palette.focusAccent.opacity(state.isPaused ? 0 : 0.22))
+                .blur(radius: 40)
+                .phaseAnimator([false, true]) { glow, inhale in
+                    glow.scaleEffect(inhale ? 1.08 : 0.92).opacity(inhale ? 1 : 0.6)
+                } animation: { _ in .easeInOut(duration: 2.6) }
+                .animation(.smooth(duration: 0.6), value: state.isPaused)
+            Circle().stroke(.white.opacity(0.08), lineWidth: 8)
             Color.clear
                 .glassSurface(in: Circle(), tone: .dark)
-                .padding(26)
+                .padding(22)
             Circle()
                 .trim(from: 0, to: state.progress(at: now))
-                .stroke(Palette.focusAccent, style: StrokeStyle(lineWidth: 14, lineCap: .round))
+                .stroke(Palette.focusAccent, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                 .rotationEffect(.degrees(-90))
+                .animation(.linear(duration: 1), value: state.progress(at: now))
             VStack(spacing: 4) {
                 Text(TimeFormat.countdown(state.remaining(at: now)))
-                    .font(.system(size: 56, weight: .light))
+                    .font(.system(size: 46, weight: .thin))
                     .monospacedDigit()
-                    .tracking(-1)
+                    .tracking(-1.5)
+                    .contentTransition(.numericText(countsDown: true))
+                    .animation(.snappy(duration: 0.35), value: Int(state.remaining(at: now)))
                 Text("剩余 · \(TimeFormat.clock(state.isPaused ? now.addingTimeInterval(state.remaining(at: now)) : state.endsAt)) 结束")
-                    .font(.system(size: 14))
+                    .font(.system(size: 11))
                     .foregroundStyle(Palette.focusSecondary)
             }
         }
-        .frame(width: 280, height: 280)
+        .frame(width: 248, height: 248)
         .accessibilityElement(children: .combine)
     }
 
     private func stat(value: String, label: String) -> some View {
         VStack(spacing: 2) {
-            Text(value).font(.system(size: 18, weight: .bold))
-            Text(label).font(.system(size: 12)).foregroundStyle(Palette.focusSecondary)
+            Text(value)
+                .font(.system(size: 14, weight: .semibold))
+                .monospacedDigit()
+                .contentTransition(.numericText())
+                .animation(.snappy, value: value)
+            Text(label).font(.system(size: 10)).foregroundStyle(Palette.focusSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(12)
@@ -225,14 +243,14 @@ private struct ActiveFocusContent: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(state.phase == .reminder ? "5 分钟后开始" : "接下来")
-                        .font(.system(size: 12))
+                        .font(.system(size: 10))
                         .foregroundStyle(state.phase == .reminder ? Palette.reminderIcon : Palette.focusSecondary)
                     Text("\(TimeFormat.clock(start)) \(title)\(durationText)")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                 }
                 Spacer()
                 if state.phase != .reminder, state.remindAt != nil {
-                    Text("提前 5 分钟提醒").font(.system(size: 13)).foregroundStyle(Palette.focusSecondary)
+                    Text("提前 5 分钟提醒").font(.system(size: 11)).foregroundStyle(Palette.focusSecondary)
                 }
             }
             if state.phase == .reminder {
@@ -245,8 +263,8 @@ private struct ActiveFocusContent: View {
                         .frame(maxWidth: .infinity, minHeight: 44)
                         .glassSurface(in: Capsule(), tint: .white.opacity(0.9), interactive: true, tone: .dark)
                 }
-                .font(.system(size: 14, weight: .semibold))
-                .buttonStyle(.plain)
+                .font(.system(size: 11, weight: .semibold))
+                .buttonStyle(.pressScale)
                 .glassPop()
             }
         }
