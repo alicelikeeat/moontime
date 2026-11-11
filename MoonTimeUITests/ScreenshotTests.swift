@@ -39,9 +39,16 @@ final class ScreenshotTests: XCTestCase {
         snap("02b-toast")
 
         // The + button pops out a quick-action menu.
-        tap(app.buttons["new-block"])
+        let fab = app.buttons["new-block"]
+        print("FAB before tap: exists=\(fab.exists) hittable=\(fab.isHittable) frame=\(fab.frame)")
+        tap(fab)
         pause(1)
         snap("03a-fab-menu")
+        if !app.buttons["fab.new"].exists {
+            for b in app.buttons.allElementsBoundByIndex {
+                print("BUTTON id=\(b.identifier) label=\(b.label) frame=\(b.frame) hittable=\(b.isHittable)")
+            }
+        }
         tap(app.buttons["fab.new"])
         pause(1.2)
         snap("03-new-block")

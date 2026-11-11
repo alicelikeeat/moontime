@@ -153,10 +153,10 @@ struct RootView: View {
                             .foregroundStyle(.white)
                             .rotationEffect(.degrees(menuOpen ? 45 : 0))
                             .frame(width: 64, height: 64)
-                            .glassSurface(in: Circle(), tint: Palette.accent, interactive: true)
-                            .glassID("fab", in: glass)
+                            .contentShape(Circle())
                     }
-                    .buttonStyle(.plain)
+                    .systemGlassButton(prominent: true, tint: Palette.accent, shape: Circle())
+                    .glassID("fab", in: glass)
                     .accessibilityLabel(menuOpen ? "关闭菜单" : "快捷操作")
                     .accessibilityIdentifier("new-block")
                 }
@@ -171,10 +171,10 @@ struct RootView: View {
                 .foregroundStyle(Palette.label)
                 .padding(.horizontal, 20)
                 .frame(height: 52)
-                .glassSurface(in: Capsule(), interactive: true)
-                .glassID(id, in: glass)
+                .contentShape(Capsule())
         }
-        .buttonStyle(.plain)
+        .systemGlassButton(shape: Capsule())
+        .glassID(id, in: glass)
         .glassPop()
         .accessibilityIdentifier(id)
     }

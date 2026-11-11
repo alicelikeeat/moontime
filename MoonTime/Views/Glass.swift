@@ -99,6 +99,23 @@ private struct GlassSurface<S: Shape>: ViewModifier {
     }
 }
 
+extension View {
+    /// A button drawn by the system's own glass button style on iOS 26
+    /// (it owns the touch handling), with our glass look on older systems.
+    @ViewBuilder
+    func systemGlassButton<S: Shape>(prominent: Bool = false, tint: Color? = nil, shape: S) -> some View {
+        if #available(iOS 26.0, *) {
+            if prominent {
+                buttonStyle(.glassProminent).tint(tint).buttonBorderShape(.circle)
+            } else {
+                buttonStyle(.glass).tint(tint).buttonBorderShape(.capsule)
+            }
+        } else {
+            buttonStyle(.plain).glassSurface(in: shape, tint: tint, interactive: true)
+        }
+    }
+}
+
 /// Lets neighbouring glass shapes blend and morph into each other on iOS 26.
 struct GlassGroup<Content: View>: View {
     var spacing: CGFloat = 12
