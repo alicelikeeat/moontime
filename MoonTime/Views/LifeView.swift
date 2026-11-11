@@ -34,7 +34,7 @@ struct LifeView: View {
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: Metrics.gap) {
                 header
                 switcher
                 Group {
@@ -49,9 +49,9 @@ struct LifeView: View {
                 }
                 .transition(.blurReplace)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 110)
+            .padding(.horizontal, Metrics.page)
+            .padding(.top, 8)
+            .padding(.bottom, Metrics.tabBarClearance)
         }
         .collapsesTabBarOnScroll()
         .safeAreaInset(edge: .top, spacing: 0) { TopScrollEdgeBlur() }
@@ -79,27 +79,10 @@ struct LifeView: View {
     }
 
     private var header: some View {
-        HStack(alignment: .bottom) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(subtitle)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Palette.secondaryLabel)
-                    .contentTransition(.numericText())
-                Text("日常").font(.system(size: 26, weight: .bold)).tracking(-0.4)
-            }
-            Spacer()
-            Button(action: add) {
-                Image(systemName: "plus")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Palette.accent)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Circle())
-            }
-            .systemGlassButton(shape: Circle())
-            .accessibilityLabel("新建\(section.title)")
-            .accessibilityIdentifier("life.add")
+        PageHeader(subtitle: subtitle, title: "日常") {
+            HeaderAddButton(label: "新建\(section.title)", id: "life.add", action: add)
         }
-        .padding(.horizontal, 4)
+        .padding(.bottom, 4)
     }
 
     private var subtitle: String {
@@ -119,15 +102,12 @@ struct LifeView: View {
                     withAnimation(.bouncy(duration: 0.45, extraBounce: 0.08)) { section = item }
                 } label: {
                     Label(item.title, systemImage: item.symbol)
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.mtHeadline)
                         .foregroundStyle(selected ? Palette.accent : Palette.tertiaryLabel)
-                        .frame(maxWidth: .infinity, minHeight: 36)
+                        .frame(maxWidth: .infinity, minHeight: 40)
                         .background {
                             if selected {
-                                Capsule()
-                                    .fill(Palette.accent.opacity(0.12))
-                                    .overlay(Capsule().stroke(.white.opacity(0.7), lineWidth: 1))
-                                    .matchedGeometryEffect(id: "segment", in: lens)
+                                SelectionLens().matchedGeometryEffect(id: "segment", in: lens)
                             }
                         }
                         .contentShape(Capsule())
@@ -197,24 +177,24 @@ struct HabitList: View {
                     .rotationEffect(.degrees(-90))
                     .animation(.bouncy(duration: 0.6), value: done)
                 Text("\(done)/\(habits.items.count)")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.mtHeadline)
                     .monospacedDigit()
                     .contentTransition(.numericText())
             }
             .frame(width: 56, height: 56)
             VStack(alignment: .leading, spacing: 3) {
                 Text(done == habits.items.count ? "今天全部完成" : "今天还差 \(habits.items.count - done) 个")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.mtTitle)
                     .contentTransition(.numericText())
                 Text("最长连续 \(habits.bestStreak) 天")
-                    .font(.system(size: 10))
+                    .font(.mtCaption)
                     .foregroundStyle(Palette.secondaryLabel)
                     .contentTransition(.numericText())
             }
             Spacer()
         }
         .padding(16)
-        .glassSurface(in: RoundedRectangle(cornerRadius: 24))
+        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 }
@@ -229,10 +209,10 @@ private struct HabitCard: View {
             SymbolBadge(symbol: habit.symbol, color: habit.color, size: 34)
             VStack(alignment: .leading, spacing: 5) {
                 Text(habit.title)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.mtHeadline)
                     .lineLimit(1)
                 Text("连续 \(habit.streak()) 天 · 共 \(habit.total) 次")
-                    .font(.system(size: 10))
+                    .font(.mtCaption)
                     .foregroundStyle(Palette.secondaryLabel)
                     .monospacedDigit()
                     .contentTransition(.numericText())
@@ -262,8 +242,8 @@ private struct HabitCard: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .glassSurface(in: RoundedRectangle(cornerRadius: 22))
-        .contentShape(RoundedRectangle(cornerRadius: 22))
+        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: Metrics.card, style: .continuous))
     }
 }
 
@@ -299,7 +279,7 @@ struct AlarmList: View {
             Text(alarms.usesSystemAlarms
                  ? "闹钟由系统负责响铃，静音模式下也会响，并显示在锁屏上。"
                  : "当前系统以通知提醒，静音模式下不会响铃。升级到 iOS 26 可使用系统闹钟。")
-                .font(.system(size: 10))
+                .font(.mtCaption)
                 .foregroundStyle(Palette.secondaryLabel)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 4)
@@ -319,7 +299,7 @@ private struct AlarmRow: View {
                     .monospacedDigit()
                     .tracking(-1)
                 Text("\(alarm.title) · \(alarm.repeatText)")
-                    .font(.system(size: 10))
+                    .font(.mtCaption)
                     .foregroundStyle(Palette.secondaryLabel)
             }
             .opacity(alarm.enabled ? 1 : 0.45)
@@ -332,7 +312,7 @@ private struct AlarmRow: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
-        .glassSurface(in: RoundedRectangle(cornerRadius: 22))
-        .contentShape(RoundedRectangle(cornerRadius: 22))
+        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: Metrics.card, style: .continuous))
     }
 }

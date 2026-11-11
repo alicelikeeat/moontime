@@ -52,7 +52,7 @@ struct EmptyHint: View {
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: symbol).font(.system(size: 26, weight: .light))
-            Text(text).font(.system(size: 11))
+            Text(text).font(.mtBody)
         }
         .foregroundStyle(Palette.secondaryLabel)
         .frame(maxWidth: .infinity, minHeight: 160)
@@ -69,12 +69,12 @@ private struct FeaturedCountdownCard: View {
             HStack(spacing: 8) {
                 SymbolBadge(symbol: countdown.symbol, color: countdown.color, size: 28)
                 Text(countdown.title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.mtTitle)
                     .lineLimit(1)
                 Spacer()
                 if countdown.pinned {
                     Label("置顶", systemImage: "pin.fill")
-                        .font(.system(size: 9, weight: .semibold))
+                        .font(.mtMicro)
                         .foregroundStyle(countdown.color)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -83,7 +83,7 @@ private struct FeaturedCountdownCard: View {
             }
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(phrase.lead)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.mtBody)
                     .foregroundStyle(Palette.secondaryLabel)
                 Text(phrase.number)
                     .font(.system(size: 64, weight: .thin))
@@ -101,13 +101,13 @@ private struct FeaturedCountdownCard: View {
                     Text("· 每年")
                 }
             }
-            .font(.system(size: 10))
+            .font(.mtCaption)
             .foregroundStyle(Palette.secondaryLabel)
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassSurface(in: RoundedRectangle(cornerRadius: 28), tint: countdown.color.opacity(0.08))
-        .contentShape(RoundedRectangle(cornerRadius: 28))
+        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous), tint: countdown.color.opacity(0.08))
+        .contentShape(RoundedRectangle(cornerRadius: Metrics.card, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("countdown.featured")
@@ -123,27 +123,27 @@ private struct CountdownRow: View {
             SymbolBadge(symbol: countdown.symbol, color: countdown.color, size: 32)
             VStack(alignment: .leading, spacing: 2) {
                 Text(countdown.title)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.mtHeadline)
                     .lineLimit(1)
                 Text(TimeFormat.fullDate(countdown.target()) + (countdown.repeatsYearly ? " · 每年" : ""))
-                    .font(.system(size: 10))
+                    .font(.mtCaption)
                     .foregroundStyle(Palette.secondaryLabel)
             }
             Spacer(minLength: 8)
             HStack(alignment: .firstTextBaseline, spacing: 3) {
-                Text(phrase.lead).font(.system(size: 9)).foregroundStyle(Palette.secondaryLabel)
+                Text(phrase.lead).font(.mtMicro).foregroundStyle(Palette.secondaryLabel)
                 Text(phrase.number)
                     .font(.system(size: 22, weight: .light))
                     .monospacedDigit()
                     .foregroundStyle(countdown.days() < 0 ? Palette.secondaryLabel : countdown.color)
                     .contentTransition(.numericText())
-                Text(phrase.unit).font(.system(size: 9)).foregroundStyle(Palette.secondaryLabel)
+                Text(phrase.unit).font(.mtMicro).foregroundStyle(Palette.secondaryLabel)
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .glassSurface(in: RoundedRectangle(cornerRadius: 20))
-        .contentShape(RoundedRectangle(cornerRadius: 20))
+        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: Metrics.card, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isButton)
     }

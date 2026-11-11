@@ -6,54 +6,38 @@ struct InboxView: View {
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 14) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("安排到 \(TimeFormat.monthDay(store.selectedDate))的空闲时间")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Palette.secondaryLabel)
-                    Text("收件箱").font(.system(size: 26, weight: .bold))
-                }
-                .padding(.horizontal, 4)
+            VStack(alignment: .leading, spacing: Metrics.gap) {
+                PageHeader(subtitle: "安排到 \(TimeFormat.monthDay(store.selectedDate))的空闲时间", title: "收件箱")
+                    .padding(.bottom, 8)
 
                 if store.inbox.isEmpty {
-                    Text("收件箱已清空")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Palette.secondaryLabel)
-                        .frame(maxWidth: .infinity, minHeight: 120)
+                    EmptyHint(symbol: "tray", text: "收件箱已清空")
                 }
 
                 ForEach(store.inbox) { item in
-                    HStack(spacing: 10) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(item.title).font(.system(size: 12, weight: .semibold))
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(item.title).font(.mtHeadline)
                             Text("预计 \(TimeFormat.duration(item.estimate))")
-                                .font(.system(size: 10))
+                                .font(.mtCaption)
                                 .foregroundStyle(Palette.secondaryLabel)
                         }
-                        Spacer()
-                        Button("安排") {
+                        Spacer(minLength: 8)
+                        PillButton(title: "安排") {
                             var scheduled: TimeBlock?
                             withAnimation(.bouncy(duration: 0.5)) { scheduled = store.schedule(item) }
                             if let scheduled {
                                 chrome.show("已安排到 \(TimeFormat.clock(scheduled.start))", symbol: "calendar.badge.plus")
                             }
                         }
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(Palette.softAccentText)
-                            .padding(.horizontal, 14)
-                            .frame(minHeight: 36)
-                            .glassSurface(in: Capsule(), tint: Palette.accent.opacity(0.14), interactive: true)
-                            .buttonStyle(.pressScale)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .glassSurface(in: RoundedRectangle(cornerRadius: 20))
+                    .card(padding: 14)
                     .glassPop()
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 110)
+            .padding(.horizontal, Metrics.page)
+            .padding(.top, 8)
+            .padding(.bottom, Metrics.tabBarClearance)
         }
         .collapsesTabBarOnScroll()
         .safeAreaInset(edge: .top, spacing: 0) { TopScrollEdgeBlur() }

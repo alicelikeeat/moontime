@@ -20,66 +20,74 @@ struct TodayView: View {
             onTap: tap,
             onSchedule: onOpenInbox
         )
-        .padding(.horizontal, 16)
-        .safeAreaInset(edge: .top, spacing: 8) {
-            // Timeline scrolls underneath this glass panel.
-            GlassGroup(spacing: 8) {
-                VStack(alignment: .leading, spacing: 12) {
-                    header(for: day)
-                    WeekStrip()
-                    HStack(spacing: 8) {
-                        Chip(text: "已安排 \(TimeFormat.hours(store.scheduledTime(on: day))) 小时")
-                        Chip(text: "空闲 \(TimeFormat.hours(store.freeTime(on: day))) 小时")
-                        Chip(text: "完成 \(blocks.filter(\.isDone).count)/\(blocks.count)")
-                    }
+        .padding(.horizontal, Metrics.page - 4)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            // Pinned header; the timeline fades out underneath it.
+            VStack(alignment: .leading, spacing: 14) {
+                PageHeader(subtitle: "\(TimeFormat.monthDay(day)) \(TimeFormat.weekday(day))", title: relativeTitle(for: day)) {
+                    featuredCountdown
                 }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .glassSurface(in: RoundedRectangle(cornerRadius: 28))
+                WeekStrip()
+                statsLine(day: day, blocks: blocks)
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, Metrics.page)
+            .padding(.top, 8)
+            .padding(.bottom, 14)
+            .background { HeaderFade() }
         }
-        .safeAreaInset(edge: .top, spacing: 0) { TopScrollEdgeBlur() }
         .background(AmbientBackground())
         .foregroundStyle(Palette.label)
     }
 
-    private func header(for day: Date) -> some View {
-        HStack(alignment: .bottom) {
-            dateTitle(for: day)
-            Spacer(minLength: 8)
-            if let featured = countdowns.featured {
-                let phrase = featured.phrase()
-                VStack(alignment: .trailing, spacing: 1) {
-                    Text(featured.title)
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(Palette.secondaryLabel)
-                        .lineLimit(1)
-                    HStack(alignment: .firstTextBaseline, spacing: 2) {
-                        Text(phrase.lead).font(.system(size: 9))
-                        Text(phrase.number)
-                            .font(.system(size: 20, weight: .light))
-                            .monospacedDigit()
-                            .foregroundStyle(featured.color)
-                        Text(phrase.unit).font(.system(size: 9))
-                    }
+    @ViewBuilder
+    private var featuredCountdown: some View {
+        if let featured = countdowns.featured {
+            let phrase = featured.phrase()
+            VStack(alignment: .trailing, spacing: 0) {
+                Text(featured.title)
+                    .font(.mtMicro)
                     .foregroundStyle(Palette.secondaryLabel)
+                    .lineLimit(1)
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text(phrase.lead).font(.mtMicro)
+                    Text(phrase.number)
+                        .font(.mtNumber(24))
+                        .monospacedDigit()
+                        .foregroundStyle(featured.color)
+                    Text(phrase.unit).font(.mtMicro)
                 }
-                .accessibilityElement(children: .combine)
+                .foregroundStyle(Palette.secondaryLabel)
             }
+            .accessibilityElement(children: .combine)
         }
     }
 
-    private func dateTitle(for day: Date) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("\(TimeFormat.monthDay(day)) \(TimeFormat.weekday(day))")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Palette.secondaryLabel)
-            Text(relativeTitle(for: day))
-                .font(.system(size: 26, weight: .bold))
-                .tracking(-0.4)
-                .contentTransition(.interpolate)
+    /// "6.2 小时已安排 · 2.8 小时空闲 · 1/6 完成"
+    private func statsLine(day: Date, blocks: [TimeBlock]) -> some View {
+        HStack(spacing: 6) {
+            stat(TimeFormat.hours(store.scheduledTime(on: day)), "小时已安排")
+            dot
+            stat(TimeFormat.hours(store.freeTime(on: day)), "小时空闲")
+            dot
+            stat("\(blocks.filter(\.isDone).count)/\(blocks.count)", "完成")
         }
+        .font(.mtCaption)
+        .foregroundStyle(Palette.secondaryLabel)
+    }
+
+    private func stat(_ value: String, _ label: String) -> some View {
+        HStack(spacing: 2) {
+            Text(value)
+                .fontWeight(.semibold)
+                .foregroundStyle(Palette.label)
+                .monospacedDigit()
+                .contentTransition(.numericText())
+            Text(label)
+        }
+    }
+
+    private var dot: some View {
+        Circle().fill(Palette.secondaryLabel.opacity(0.5)).frame(width: 2, height: 2)
     }
 
     private func relativeTitle(for day: Date) -> String {
@@ -99,20 +107,6 @@ struct TodayView: View {
     }
 }
 
-private struct Chip: View {
-    let text: String
-    var body: some View {
-        Text(text)
-            .font(.system(size: 10, weight: .semibold))
-            .monospacedDigit()
-            .foregroundStyle(Palette.tertiaryLabel)
-            .contentTransition(.numericText())
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .glassSurface(in: Capsule(), tint: .white.opacity(0.35))
-    }
-}
-
 private struct WeekStrip: View {
     @Environment(DayStore.self) private var store
     @Namespace private var lens
@@ -127,37 +121,40 @@ private struct WeekStrip: View {
     private let symbols = ["一", "二", "三", "四", "五", "六", "日"]
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 0) {
             ForEach(Array(days.enumerated()), id: \.offset) { index, day in
                 let selected = Calendar.current.isDate(day, inSameDayAs: store.selectedDate)
+                let isToday = Calendar.current.isDateInToday(day)
                 let weekend = index >= 5
                 Button {
-                    withAnimation(.bouncy(duration: 0.5, extraBounce: 0.1)) {
+                    withAnimation(.bouncy(duration: 0.45, extraBounce: 0.08)) {
                         store.selectedDate = Calendar.current.startOfDay(for: day)
                     }
                 } label: {
-                    VStack(spacing: 2) {
+                    VStack(spacing: 1) {
                         Text(symbols[index])
-                            .font(.system(size: 10))
-                            .foregroundStyle(selected ? .white : Palette.secondaryLabel)
+                            .font(.mtMicro)
+                            .foregroundStyle(selected ? Palette.accent : Palette.secondaryLabel)
                         Text("\(Calendar.current.component(.day, from: day))")
-                            .font(.system(size: 13, weight: selected ? .bold : .semibold))
-                            .foregroundStyle(selected ? .white : (weekend ? Palette.secondaryLabel : Palette.label))
+                            .font(.system(size: 13, weight: selected || isToday ? .semibold : .regular))
+                            .monospacedDigit()
+                            .foregroundStyle(selected || isToday ? Palette.accent : (weekend ? Palette.secondaryLabel : Palette.label))
                     }
-                    .frame(maxWidth: .infinity, minHeight: 46)
+                    .frame(maxWidth: .infinity, minHeight: 44)
                     .background {
                         if selected {
-                            // Tinted glass lens that slides to the picked day.
-                            Color.clear
-                                .glassSurface(in: RoundedRectangle(cornerRadius: 16), tint: Palette.accent, interactive: true)
-                                .matchedGeometryEffect(id: "day-lens", in: lens)
+                            SelectionLens().matchedGeometryEffect(id: "day-lens", in: lens)
                         }
                     }
-                    .contentShape(RoundedRectangle(cornerRadius: 14))
+                    .contentShape(Capsule())
                 }
                 .buttonStyle(.pressScale)
+                .accessibilityLabel("\(TimeFormat.monthDay(day)) \(TimeFormat.weekday(day))")
                 .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
+        .padding(4)
+        .glassSurface(in: Capsule(style: .continuous))
+        .sensoryFeedback(.selection, trigger: store.selectedDate)
     }
 }

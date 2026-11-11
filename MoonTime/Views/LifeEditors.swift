@@ -106,7 +106,7 @@ struct AlarmEditor: View {
                                 }
                             } label: {
                                 Text(names[weekday] ?? "")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.mtHeadline)
                                     .foregroundStyle(on ? .white : Palette.label)
                                     .frame(maxWidth: .infinity, minHeight: 44)
                                     .background(on ? Palette.accent : Palette.accent.opacity(0.08), in: Circle())

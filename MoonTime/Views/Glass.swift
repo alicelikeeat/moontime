@@ -45,10 +45,11 @@ extension View {
     /// Liquid Glass on iOS 26+, a hand-made glass look on older systems.
     /// Follows the appearance setting. `tint` is used as-is (pass a low
     /// opacity for a subtle tint) and replaces the frost tint.
+    /// `elevated: false` drops the outline and shadow, for dense content like time blocks.
     func glassSurface<S: Shape>(
-        in shape: S, tint: Color? = nil, interactive: Bool = false, tone: GlassTone = .light
+        in shape: S, tint: Color? = nil, interactive: Bool = false, tone: GlassTone = .light, elevated: Bool = true
     ) -> some View {
-        modifier(GlassSurface(shape: shape, tint: tint, interactive: interactive, tone: tone))
+        modifier(GlassSurface(shape: shape, tint: tint, interactive: interactive, tone: tone, elevated: elevated))
     }
 }
 
@@ -57,6 +58,7 @@ private struct GlassSurface<S: Shape>: ViewModifier {
     let tint: Color?
     let interactive: Bool
     let tone: GlassTone
+    var elevated = true
     @Environment(\.glassAppearance) private var look
 
     private var frostColor: Color {
@@ -67,8 +69,8 @@ private struct GlassSurface<S: Shape>: ViewModifier {
         if #available(iOS 26.0, *) {
             content
                 .glassEffect(liquidGlass, in: shape)
-                .background { edgeShadow }
-                .overlay { hairline }
+                .background { if elevated { edgeShadow } }
+                .overlay { if elevated { hairline } }
         } else {
             content
                 .background {
@@ -90,7 +92,7 @@ private struct GlassSurface<S: Shape>: ViewModifier {
                         lineWidth: 1
                     )
                 }
-                .shadow(color: .black.opacity(tone == .light ? 0.08 : 0.35), radius: 12, y: 6)
+                .shadow(color: .black.opacity(elevated ? (tone == .light ? 0.06 : 0.3) : 0), radius: 12, y: 6)
         }
     }
 
@@ -99,15 +101,15 @@ private struct GlassSurface<S: Shape>: ViewModifier {
     /// and a hairline outline.
     private var edgeShadow: some View {
         shape
-            .stroke(Color.black.opacity(tone == .light ? 0.10 : 0.35), lineWidth: 6)
-            .blur(radius: 8)
+            .stroke(Color.black.opacity(tone == .light ? 0.06 : 0.3), lineWidth: 6)
+            .blur(radius: 10)
             .offset(y: 4)
             .allowsHitTesting(false)
     }
 
     private var hairline: some View {
         shape
-            .stroke(tone == .light ? Color.black.opacity(0.07) : Color.white.opacity(0.12), lineWidth: 0.5)
+            .stroke(tone == .light ? Color.black.opacity(0.05) : Color.white.opacity(0.1), lineWidth: 0.5)
             .allowsHitTesting(false)
     }
 

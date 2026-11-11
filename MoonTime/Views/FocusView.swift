@@ -28,7 +28,7 @@ struct FocusView: View {
         HStack {
             Button(action: onClose) {
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.mtTitle)
                     .frame(width: 44, height: 44)
                     .glassSurface(in: Circle(), interactive: true, tone: .dark)
             }
@@ -60,7 +60,7 @@ struct FocusView: View {
                     store.startFocus(block)
                 } label: {
                     Text("开始：\(block.title)")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.mtTitle)
                         .frame(maxWidth: .infinity, minHeight: 48)
                         .glassSurface(in: Capsule(), tint: Palette.focusAccent, interactive: true, tone: .dark)
                 }
@@ -68,7 +68,7 @@ struct FocusView: View {
                 .buttonStyle(.pressScale)
             } else {
                 Text("今天的时间块都完成了")
-                    .font(.system(size: 12))
+                    .font(.mtBody)
                     .foregroundStyle(Palette.focusSecondary)
             }
             Spacer()
@@ -79,8 +79,8 @@ struct FocusView: View {
 private struct BadgeLabelStyle: LabelStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack(spacing: 6) {
-            configuration.icon.font(.system(size: 11)).foregroundStyle(Palette.moon)
-            configuration.title.font(.system(size: 11, weight: .semibold))
+            configuration.icon.font(.mtBody).foregroundStyle(Palette.moon)
+            configuration.title.font(.mtHeadline)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
@@ -104,7 +104,7 @@ private struct ActiveFocusContent: View {
         VStack(spacing: 24) {
             VStack(spacing: 6) {
                 Text(focus.category.name)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.mtCaption.weight(.semibold))
                     .tracking(2)
                     .foregroundStyle(Palette.focusSecondary)
                 Text(focus.title)
@@ -136,7 +136,7 @@ private struct ActiveFocusContent: View {
                 HStack(spacing: state.isPaused ? 12 : 2) {
                     Button(action: store.togglePause) {
                         Label(state.isPaused ? "继续" : "暂停", systemImage: state.isPaused ? "play.fill" : "pause.fill")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.mtTitle)
                             .contentTransition(.symbolEffect(.replace))
                             .frame(maxWidth: .infinity, minHeight: 50)
                             .glassSurface(in: Capsule(), interactive: true, tone: .dark)
@@ -148,7 +148,7 @@ private struct ActiveFocusContent: View {
                     if state.isPaused {
                         Button(action: store.extendFocus) {
                             Text("+15")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.mtTitle)
                                 .frame(width: 64, height: 50)
                                 .glassSurface(in: Capsule(), interactive: true, tone: .dark)
                                 .glassID("extend", in: glass)
@@ -159,7 +159,7 @@ private struct ActiveFocusContent: View {
 
                     Button(action: finish) {
                         Label("完成", systemImage: "checkmark")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.mtTitle)
                             .frame(maxWidth: .infinity, minHeight: 50)
                             .glassSurface(in: Capsule(), tint: Palette.focusAccent, interactive: true, tone: .dark)
                             .glassUnion(state.isPaused ? "finish" : "controls", in: glass)
@@ -213,7 +213,7 @@ private struct ActiveFocusContent: View {
                     .contentTransition(.numericText(countsDown: true))
                     .animation(.snappy(duration: 0.35), value: Int(state.remaining(at: now)))
                 Text("剩余 · \(TimeFormat.clock(state.isPaused ? now.addingTimeInterval(state.remaining(at: now)) : state.endsAt)) 结束")
-                    .font(.system(size: 11))
+                    .font(.mtBody)
                     .foregroundStyle(Palette.focusSecondary)
             }
         }
@@ -224,15 +224,15 @@ private struct ActiveFocusContent: View {
     private func stat(value: String, label: String) -> some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.mtTitle)
                 .monospacedDigit()
                 .contentTransition(.numericText())
                 .animation(.snappy, value: value)
-            Text(label).font(.system(size: 10)).foregroundStyle(Palette.focusSecondary)
+            Text(label).font(.mtCaption).foregroundStyle(Palette.focusSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(12)
-        .glassSurface(in: RoundedRectangle(cornerRadius: 16), tone: .dark)
+        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous), tone: .dark)
         .glassUnion(statsMerged ? "stats" : "stat.\(label)", in: glass)
     }
 
@@ -243,14 +243,14 @@ private struct ActiveFocusContent: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(state.phase == .reminder ? "5 分钟后开始" : "接下来")
-                        .font(.system(size: 10))
+                        .font(.mtCaption)
                         .foregroundStyle(state.phase == .reminder ? Palette.reminderIcon : Palette.focusSecondary)
                     Text("\(TimeFormat.clock(start)) \(title)\(durationText)")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.mtHeadline)
                 }
                 Spacer()
                 if state.phase != .reminder, state.remindAt != nil {
-                    Text("提前 5 分钟提醒").font(.system(size: 11)).foregroundStyle(Palette.focusSecondary)
+                    Text("提前 5 分钟提醒").font(.mtBody).foregroundStyle(Palette.focusSecondary)
                 }
             }
             if state.phase == .reminder {
@@ -263,7 +263,7 @@ private struct ActiveFocusContent: View {
                         .frame(maxWidth: .infinity, minHeight: 44)
                         .glassSurface(in: Capsule(), tint: .white.opacity(0.9), interactive: true, tone: .dark)
                 }
-                .font(.system(size: 11, weight: .semibold))
+                .font(.mtHeadline)
                 .buttonStyle(.pressScale)
                 .glassPop()
             }
@@ -271,6 +271,6 @@ private struct ActiveFocusContent: View {
         .animation(.bouncy(duration: 0.5), value: state.phase)
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .glassSurface(in: RoundedRectangle(cornerRadius: 18), tone: .dark)
+        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous), tone: .dark)
     }
 }

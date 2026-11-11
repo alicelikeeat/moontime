@@ -106,11 +106,11 @@ struct RootView: View {
                 if let toast = chrome.toast {
                     HStack(spacing: 8) {
                         Image(systemName: toast.symbol)
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.mtHeadline)
                             .foregroundStyle(Palette.accent)
                             .symbolEffect(.bounce, value: toast.id)
                         Text(toast.text)
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.mtHeadline)
                             .foregroundStyle(Palette.label)
                             .lineLimit(1)
                     }
@@ -185,7 +185,7 @@ struct RootView: View {
     private func menuItem(_ title: String, symbol: String, id: String, order: Int, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Label(title, systemImage: symbol)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.mtTitle)
                 .foregroundStyle(Palette.label)
                 .padding(.horizontal, 18)
                 .frame(height: 44)
@@ -223,17 +223,14 @@ struct FloatingTabBar: View {
                             .font(.system(size: 17, weight: .medium))
                             .symbolEffect(.bounce.down, value: selected)
                         Text(tab.title)
-                            .font(.system(size: 9, weight: .semibold))
+                            .font(.mtMicro)
                     }
                     .foregroundStyle(selected ? Palette.accent : Palette.tertiaryLabel)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background {
                         if selected {
                             // A liquid lens that slides to the selected tab.
-                            Capsule()
-                                .fill(Palette.accent.opacity(0.12))
-                                .overlay(Capsule().stroke(.white.opacity(0.7), lineWidth: 1))
-                                .matchedGeometryEffect(id: "lens", in: indicator)
+                            SelectionLens().matchedGeometryEffect(id: "lens", in: indicator)
                         }
                     }
                     .contentShape(Capsule())

@@ -16,14 +16,9 @@ struct ReviewView: View {
         let onPlanRate = blocks.isEmpty ? 0 : Double(done.count) / Double(blocks.count)
 
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 14) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("\(TimeFormat.monthDay(.now)) · \(TimeFormat.clock(.now))")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Palette.secondaryLabel)
-                    Text("今日复盘").font(.system(size: 26, weight: .bold))
-                }
-                .padding(.horizontal, 4)
+            VStack(alignment: .leading, spacing: Metrics.gap) {
+                PageHeader(subtitle: "\(TimeFormat.monthDay(.now)) · \(TimeFormat.clock(.now))", title: "今日复盘")
+                    .padding(.bottom, 8)
 
                 // Starts as one slab of glass, then splits into three cards.
                 GlassGroup(spacing: 10) {
@@ -41,39 +36,31 @@ struct ReviewView: View {
                 PlanVsActualCard(blocks: blocks)
 
                 ForEach(unfinished) { block in
-                    HStack(spacing: 10) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("未完成").font(.system(size: 10)).foregroundStyle(Palette.secondaryLabel)
-                            Text(block.title).font(.system(size: 12, weight: .semibold)).lineLimit(1)
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("未完成").font(.mtCaption).foregroundStyle(Palette.secondaryLabel)
+                            Text(block.title).font(.mtHeadline).lineLimit(1)
                         }
-                        Spacer()
-                        Button("移到明天") {
+                        Spacer(minLength: 8)
+                        PillButton(title: "移到明天") {
                             withAnimation(.bouncy) { store.moveToTomorrow(block.id) }
                             chrome.show("已移到明天", symbol: "arrow.turn.down.right")
                         }
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(Palette.softAccentText)
-                            .padding(.horizontal, 14)
-                            .frame(minHeight: 36)
-                            .glassSurface(in: Capsule(), tint: Palette.accent.opacity(0.14), interactive: true)
-                            .buttonStyle(.pressScale)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .glassSurface(in: RoundedRectangle(cornerRadius: 20))
+                    .card(padding: 14)
+                    .glassPop()
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("今天最有成就感的一件事？").font(.system(size: 12, weight: .semibold))
-                    TextField("写一句就好", text: $store.reflection)
-                        .font(.system(size: 12))
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("今天最有成就感的一件事？").font(.mtHeadline)
+                    TextField("写一句就好", text: $store.reflection, axis: .vertical)
+                        .font(.mtBody)
+                        .lineLimit(1...4)
                         .padding(.horizontal, 12)
-                        .frame(height: 40)
-                        .background(.white.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+                        .padding(.vertical, 10)
+                        .background(Palette.accent.opacity(0.04), in: RoundedRectangle(cornerRadius: Metrics.small, style: .continuous))
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .glassSurface(in: RoundedRectangle(cornerRadius: 20))
+                .card()
 
                 Button {
                     let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: .now) ?? .now
@@ -81,16 +68,17 @@ struct ReviewView: View {
                     onPlanTomorrow()
                 } label: {
                     Label("规划明天", systemImage: "moon.fill")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.mtTitle)
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity, minHeight: 48)
-                        .glassSurface(in: Capsule(), tint: Palette.accent, interactive: true)
+                        .contentShape(Capsule())
                 }
-                .buttonStyle(.pressScale)
+                .systemGlassButton(prominent: false, tint: Palette.accent, shape: Capsule())
+                .padding(.top, 8)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 110)
+            .padding(.horizontal, Metrics.page)
+            .padding(.top, 8)
+            .padding(.bottom, Metrics.tabBarClearance)
         }
         .collapsesTabBarOnScroll()
         .safeAreaInset(edge: .top, spacing: 0) { TopScrollEdgeBlur() }
@@ -101,17 +89,17 @@ struct ReviewView: View {
     private func statCard(_ value: String, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(value)
-                .font(.system(size: 18, weight: .semibold))
+                .font(.mtNumber(24))
                 .monospacedDigit()
-                .tracking(-0.3)
+                .tracking(-0.5)
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
                 .contentTransition(.numericText())
-            Text(label).font(.system(size: 10)).foregroundStyle(Palette.secondaryLabel)
+            Text(label).font(.mtCaption).foregroundStyle(Palette.secondaryLabel)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .glassSurface(in: RoundedRectangle(cornerRadius: 16))
+        .padding(14)
+        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous))
         .glassUnion(statsMerged ? "stats" : "stat.\(label)", in: glass)
     }
 }
@@ -161,7 +149,7 @@ private struct PlanVsActualCard: View {
 
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("计划 vs 实际").font(.system(size: 13, weight: .bold))
+                Text("计划 vs 实际").font(.mtTitle)
                 Spacer()
                 legend(Palette.plannedBar, "计划")
                 legend(Palette.accent, "实际")
@@ -169,10 +157,10 @@ private struct PlanVsActualCard: View {
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text(row.category.name).font(.system(size: 11, weight: .semibold))
+                        Text(row.category.name).font(.mtHeadline)
                         Spacer()
                         Text("\(TimeFormat.short(row.planned)) → \(TimeFormat.short(row.actual))")
-                            .font(.system(size: 11))
+                            .font(.mtBody)
                             .foregroundStyle(Palette.secondaryLabel)
                     }
                     // Bars grow in one row after another.
@@ -185,19 +173,18 @@ private struct PlanVsActualCard: View {
                 .accessibilityElement(children: .combine)
             }
             Text(insight)
-                .font(.system(size: 11))
+                .font(.mtBody)
                 .foregroundStyle(Palette.tertiaryLabel)
                 .lineSpacing(3)
         }
-        .padding(16)
-        .glassSurface(in: RoundedRectangle(cornerRadius: 20))
+        .card()
         .onAppear { grown = true }
     }
 
     private func legend(_ color: Color, _ text: String) -> some View {
         HStack(spacing: 4) {
-            RoundedRectangle(cornerRadius: 2).fill(color).frame(width: 8, height: 8)
-            Text(text).font(.system(size: 10)).foregroundStyle(Palette.secondaryLabel)
+            RoundedRectangle(cornerRadius: 2, style: .continuous).fill(color).frame(width: 8, height: 8)
+            Text(text).font(.mtCaption).foregroundStyle(Palette.secondaryLabel)
         }
     }
 

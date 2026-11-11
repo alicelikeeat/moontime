@@ -120,7 +120,7 @@ struct DayTimeline: View {
             ForEach(firstHour...lastHour, id: \.self) { hour in
                 HStack(alignment: .top, spacing: 8) {
                     Text("\(hour):00")
-                        .font(.system(size: 10))
+                        .font(.mtCaption)
                         .foregroundStyle(Palette.secondaryLabel)
                         .frame(width: 40, alignment: .trailing)
                         .offset(y: -7)
@@ -161,22 +161,22 @@ struct DayTimeline: View {
             Text(inboxCount > 0
                  ? "空闲 \(TimeFormat.duration(slot.duration)) · 收件箱里有 \(inboxCount) 件事"
                  : "空闲 \(TimeFormat.duration(slot.duration))")
-                .font(.system(size: 11))
+                .font(.mtBody)
                 .foregroundStyle(Palette.freeSlotText)
             Spacer()
             if inboxCount > 0 {
                 Button("安排", action: onSchedule)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.mtHeadline)
                     .foregroundStyle(Palette.accent)
                     .frame(minHeight: 44)
             }
         }
         .padding(.horizontal, 12)
         .frame(maxHeight: .infinity)
-        .glassSurface(in: RoundedRectangle(cornerRadius: 10), tint: .white.opacity(0.15))
+        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.small, style: .continuous), tint: .white.opacity(0.15), elevated: false)
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Palette.freeSlotBorder, style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+            RoundedRectangle(cornerRadius: Metrics.small, style: .continuous)
+                .stroke(Palette.freeSlotBorder.opacity(0.7), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
         )
     }
 
@@ -221,19 +221,19 @@ struct BlockCard: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .glassSurface(in: RoundedRectangle(cornerRadius: cornerRadius), tint: category.fill.opacity(0.8))
+        .glassSurface(in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous), tint: category.fill.opacity(0.9), elevated: false)
         .overlay {
             if focus != nil {
-                RoundedRectangle(cornerRadius: cornerRadius).stroke(Palette.accent, lineWidth: 2)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).stroke(Palette.accent, lineWidth: 2)
             }
         }
-        .contentShape(RoundedRectangle(cornerRadius: cornerRadius))
+        .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("block.\(block.title)")
     }
 
-    private var cornerRadius: CGFloat { height < 44 ? 8 : (height < 70 ? 10 : 12) }
+    private var cornerRadius: CGFloat { Metrics.small }
 
     private var timeRange: String { "\(TimeFormat.clock(block.start)) – \(TimeFormat.clock(block.end))" }
 
@@ -241,11 +241,11 @@ struct BlockCard: View {
         HStack(spacing: 6) {
             if block.isDone {
                 Image(systemName: "checkmark")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.mtCaption.weight(.semibold))
                     .foregroundStyle(category.title)
             }
             Text(block.displayTitle)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.mtHeadline)
                 .foregroundStyle(category.title)
                 .strikethrough(block.isDone)
                 .lineLimit(1)
@@ -253,7 +253,7 @@ struct BlockCard: View {
             Text(block.isDone
                  ? TimeFormat.clock(block.start)
                  : "\(TimeFormat.clock(block.start)) · \(TimeFormat.duration(block.duration))")
-                .font(.system(size: 10))
+                .font(.mtCaption)
                 .foregroundStyle(category.detail)
         }
         .padding(.horizontal, 10)
@@ -263,7 +263,7 @@ struct BlockCard: View {
     private var regularCard: some View {
         VStack(alignment: .leading, spacing: 2) {
             if height >= 70 {
-                Text(timeRange).font(.system(size: 10)).foregroundStyle(category.detail)
+                Text(timeRange).font(.mtCaption).foregroundStyle(category.detail)
             }
             Text(block.displayTitle)
                 .font(.system(size: height >= 70 ? 15 : 14, weight: height >= 70 ? .bold : .semibold))
@@ -272,10 +272,10 @@ struct BlockCard: View {
                 .lineLimit(1)
             if height >= 70 {
                 if let note = block.note {
-                    Text(note).font(.system(size: 10)).foregroundStyle(category.detail).lineLimit(1)
+                    Text(note).font(.mtCaption).foregroundStyle(category.detail).lineLimit(1)
                 }
             } else {
-                Text(timeRange).font(.system(size: 10)).foregroundStyle(category.detail)
+                Text(timeRange).font(.mtCaption).foregroundStyle(category.detail)
             }
         }
         .padding(.horizontal, 12)
@@ -286,20 +286,20 @@ struct BlockCard: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
                 Text(focus.state.isPaused ? "已暂停" : "进行中")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.mtMicro)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
                     .background(Palette.accent, in: Capsule())
-                Text(timeRange).font(.system(size: 10)).foregroundStyle(category.detail)
+                Text(timeRange).font(.mtCaption).foregroundStyle(category.detail)
             }
             Text(block.displayTitle)
-                .font(.system(size: 13, weight: .bold))
+                .font(.mtTitle)
                 .foregroundStyle(category.title)
                 .lineLimit(2)
             TimelineView(.periodic(from: .now, by: 30)) { context in
                 Text("已专注 \(TimeFormat.minutes(focus.state.elapsed(at: context.date))) 分钟")
-                    .font(.system(size: 11))
+                    .font(.mtBody)
                     .foregroundStyle(category.detail)
             }
         }
@@ -343,7 +343,7 @@ private struct BlockActions: View {
     ) -> some View {
         Button(action: run) {
             Image(systemName: symbol)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.mtTitle)
                 .foregroundStyle(color)
                 .frame(width: 46, height: 46)
                 .glassSurface(in: Circle(), tint: tint, interactive: true)
