@@ -69,21 +69,13 @@ struct AmbientBackground: View {
     }
 }
 
-/// Frosted fade under the status bar so scrolled content doesn't collide with it.
+/// Frosted strip behind the status bar so scrolled content doesn't collide with it.
+/// Use with `.safeAreaInset(edge: .top, spacing: 0)`; it adds no height of its own.
 struct TopScrollEdgeBlur: View {
     var body: some View {
-        Rectangle()
-            .fill(.ultraThinMaterial)
-            .mask(
-                LinearGradient(
-                    stops: [.init(color: .black, location: 0), .init(color: .black, location: 0.55), .init(color: .clear, location: 1)],
-                    startPoint: .top, endPoint: .bottom
-                )
-            )
-            .frame(height: 20)
-            .ignoresSafeArea(edges: .top)
-            .frame(maxHeight: .infinity, alignment: .top)
-            .allowsHitTesting(false)
+        Color.clear
+            .frame(height: 0)
+            .background(.ultraThinMaterial, ignoresSafeAreaEdges: .top)
             .accessibilityHidden(true)
     }
 }

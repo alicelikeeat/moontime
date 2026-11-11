@@ -62,8 +62,13 @@ struct FocusLiveActivity: Widget {
                     }
                 }
             } compactLeading: {
-                FocusRing(state: context.state)
-                    .frame(width: 20, height: 20)
+                ZStack {
+                    FocusRing(state: context.state)
+                    Image(systemName: "moon.fill")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(Palette.liveAccent)
+                }
+                .frame(width: 20, height: 20)
             } compactTrailing: {
                 FocusTimerText(state: context.state)
                     .font(.system(size: 14, weight: .semibold))

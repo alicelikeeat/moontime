@@ -79,7 +79,7 @@ struct ReviewView: View {
             .padding(.top, 12)
             .padding(.bottom, 110)
         }
-        .overlay { TopScrollEdgeBlur() }
+        .safeAreaInset(edge: .top, spacing: 0) { TopScrollEdgeBlur() }
         .background(AmbientBackground())
         .foregroundStyle(Palette.label)
     }
