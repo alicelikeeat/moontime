@@ -133,3 +133,19 @@ struct HeaderFade: View {
             .accessibilityHidden(true)
     }
 }
+
+/// White scheme: a thin black edge around every glyph, icon, line and card,
+/// so white-on-white stays readable. A shadow on a container is applied to
+/// each child separately, so this outlines each element, not the page.
+struct InkOutline: ViewModifier {
+    func body(content: Content) -> some View {
+        if Palette.monochrome {
+            content
+                .shadow(color: .black, radius: 0.4)
+                .shadow(color: .black.opacity(0.85), radius: 0.6)
+                .shadow(color: .black.opacity(0.25), radius: 1.6)
+        } else {
+            content
+        }
+    }
+}
