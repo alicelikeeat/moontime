@@ -1,0 +1,6 @@
+*.xcodeproj/
+MoonTime/Info.plist
+MoonTimeWidgets/Info.plist
+DerivedData/
+.DS_Store
+xcuserdata/
