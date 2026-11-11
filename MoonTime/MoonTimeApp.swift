@@ -18,7 +18,6 @@ struct MoonTimeApp: App {
             RootView()
                 // Rebuild every screen when the colour scheme changes.
                 .id(scheme)
-                .modifier(InkOutline())
                 .tint(Palette.accent)
                 .environment(store)
                 .environment(countdowns)

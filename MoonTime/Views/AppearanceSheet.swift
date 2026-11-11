@@ -21,7 +21,7 @@ struct AppearanceSheet: View {
                 } header: {
                     Text("配色")
                 } footer: {
-                    Text("白色：按钮、卡片和图标都用白色与灰色，只保留黑白层次。彩色：分类和强调色使用原设计的颜色。")
+                    Text("白色：按钮和卡片是白色玻璃，文字和图标全部黑色。彩色：分类和强调色使用原设计的颜色。")
                 }
                 Section("背景") {
                     Picker("背景", selection: $background) {

@@ -68,9 +68,6 @@ private struct GlassSurface<S: Shape>: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 26.0, *) {
             content
-                // Glass draws its content in its own layer, so the outline
-                // applied at the root doesn't reach in; apply it here too.
-                .modifier(InkOutline())
                 .glassEffect(liquidGlass, in: shape)
                 .background { if elevated { edgeShadow } }
                 .overlay { if elevated { hairline } }

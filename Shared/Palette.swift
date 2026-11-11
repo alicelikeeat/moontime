@@ -12,9 +12,9 @@ extension Color {
     }
 }
 
-/// App colours. In the white scheme (the default) everything is white,
-/// text included, and the app draws a thin black edge around it all.
-/// The colour scheme keeps the original design colours.
+/// App colours. In the white scheme (the default) surfaces and accents are
+/// white glass and all text and icons are black; the colour scheme keeps
+/// the original design colours.
 enum Palette {
     static let schemeKey = "appearance.palette"
 
@@ -25,32 +25,31 @@ enum Palette {
     private static func pick(_ white: Color, _ colour: Color) -> Color { monochrome ? white : colour }
 
     // Light screens
-    static var accent: Color { pick(.white, Color(hex: 0x0060DF)) }
+    static var accent: Color { pick(.black, Color(hex: 0x0060DF)) }
     /// Fill behind prominent buttons; nil = untinted (white) glass.
     static var accentFill: Color? { monochrome ? nil : Color(hex: 0x0060DF) }
     /// Text and icons on top of `accentFill`.
-    static var onAccent: Color { .white }
+    static var onAccent: Color { pick(.black, .white) }
     static var background: Color { pick(.white, Color(hex: 0xF2F2F7)) }
-    // In the white scheme text is white too; the app outlines it in black.
-    static var label: Color { pick(.white, Color(hex: 0x1C1C1E)) }
-    static var secondaryLabel: Color { pick(Color.white.opacity(0.92), Color(hex: 0x6C6C70)) }
-    static var tertiaryLabel: Color { pick(.white, Color(hex: 0x3A3A3C)) }
-    static var gridLine: Color { pick(.white, Color(hex: 0xD8D8DE)) }
-    static var nowLine: Color { pick(.white, Color(hex: 0xD70015)) }
-    static var freeSlotBorder: Color { pick(.white, Color(hex: 0xA8A8B0)) }
-    static var freeSlotText: Color { pick(.white, Color(hex: 0x5A5A5F)) }
-    static var plannedBar: Color { pick(Color.white.opacity(0.4), Color(hex: 0xB9D3F7)) }
-    static var softAccentFill: Color { pick(.white, Color(hex: 0xE8EFFC)) }
-    static var softAccentText: Color { pick(.white, Color(hex: 0x0050BA)) }
+    static var label: Color { pick(.black, Color(hex: 0x1C1C1E)) }
+    static var secondaryLabel: Color { pick(.black, Color(hex: 0x6C6C70)) }
+    static var tertiaryLabel: Color { pick(.black, Color(hex: 0x3A3A3C)) }
+    static var gridLine: Color { pick(Color(hex: 0xE5E5EA), Color(hex: 0xD8D8DE)) }
+    static var nowLine: Color { pick(.black, Color(hex: 0xD70015)) }
+    static let freeSlotBorder = Color(hex: 0xA8A8B0)
+    static let freeSlotText = Color(hex: 0x5A5A5F)
+    static var plannedBar: Color { pick(Color(hex: 0xE5E5EA), Color(hex: 0xB9D3F7)) }
+    static var softAccentFill: Color { pick(Color(hex: 0xF2F2F7), Color(hex: 0xE8EFFC)) }
+    static var softAccentText: Color { pick(.black, Color(hex: 0x0050BA)) }
 
     // Focus screen (white in the white scheme, dark otherwise)
     static var focusBackground: Color { pick(.white, Color(hex: 0x0E0F14)) }
-    static var focusForeground: Color { .white }
-    static var focusAccent: Color { pick(.white, Color(hex: 0x2563EB)) }
+    static var focusForeground: Color { pick(.black, .white) }
+    static var focusAccent: Color { pick(.black, Color(hex: 0x2563EB)) }
     static var focusAccentFill: Color? { monochrome ? nil : Color(hex: 0x2563EB) }
-    static var focusSecondary: Color { pick(Color.white.opacity(0.92), Color(hex: 0xA9ABB8)) }
-    static var focusTrack: Color { pick(Color.white.opacity(0.5), Color.white.opacity(0.08)) }
-    static var moon: Color { pick(.white, Color(hex: 0xC7B8FF)) }
+    static var focusSecondary: Color { pick(.black, Color(hex: 0xA9ABB8)) }
+    static var focusTrack: Color { pick(Color.black.opacity(0.06), Color.white.opacity(0.08)) }
+    static var moon: Color { pick(.black, Color(hex: 0xC7B8FF)) }
 
     // Lock screen / Dynamic Island (always drawn on dark)
     static var liveAccent: Color { pick(.white, Color(hex: 0x8AB4FF)) }
@@ -60,5 +59,5 @@ enum Palette {
     static var islandIconFill: Color { pick(Color.white.opacity(0.14), Color(hex: 0x1F2A4D)) }
 
     /// A user-picked colour (habit, countdown), greyed in the white scheme.
-    static func tone(_ hex: UInt32) -> Color { monochrome ? .white : Color(hex: hex) }
+    static func tone(_ hex: UInt32) -> Color { monochrome ? .black : Color(hex: hex) }
 }
