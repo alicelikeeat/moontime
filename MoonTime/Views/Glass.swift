@@ -65,7 +65,10 @@ private struct GlassSurface<S: Shape>: ViewModifier {
 
     func body(content: Content) -> some View {
         if #available(iOS 26.0, *) {
-            content.glassEffect(liquidGlass, in: shape)
+            content
+                .glassEffect(liquidGlass, in: shape)
+                .background { edgeShadow }
+                .overlay { hairline }
         } else {
             content
                 .background {
@@ -89,6 +92,23 @@ private struct GlassSurface<S: Shape>: ViewModifier {
                 }
                 .shadow(color: .black.opacity(tone == .light ? 0.08 : 0.35), radius: 12, y: 6)
         }
+    }
+
+    /// Clear glass on a white page has no visible edge, so give every piece
+    /// a soft drop shadow (drawn only from its rim, the middle stays clear)
+    /// and a hairline outline.
+    private var edgeShadow: some View {
+        shape
+            .stroke(Color.black.opacity(tone == .light ? 0.10 : 0.35), lineWidth: 6)
+            .blur(radius: 8)
+            .offset(y: 4)
+            .allowsHitTesting(false)
+    }
+
+    private var hairline: some View {
+        shape
+            .stroke(tone == .light ? Color.black.opacity(0.07) : Color.white.opacity(0.12), lineWidth: 0.5)
+            .allowsHitTesting(false)
     }
 
     @available(iOS 26.0, *)
@@ -199,13 +219,19 @@ final class ChromeState {
 struct CollapsesTabBarOnScroll: ViewModifier {
     @Environment(ChromeState.self) private var chrome
 
+    @State private var userScrolling = false
+
     func body(content: Content) -> some View {
         if #available(iOS 18.0, *) {
-            content.onScrollGeometryChange(for: CGFloat.self) { geo in
+            content
+            .onScrollPhaseChange { _, phase in
+                // Only the user's own scrolling counts, not scrollTo on appear.
+                userScrolling = phase == .tracking || phase == .interacting || phase == .decelerating
+            }
+            .onScrollGeometryChange(for: CGFloat.self) { geo in
                 geo.contentOffset.y + geo.contentInsets.top
             } action: { old, new in
-                // Big jumps are programmatic (scrollTo), not the user swiping.
-                guard abs(new - old) < 150 else { return }
+                guard userScrolling, abs(new - old) < 150 else { return }
                 if new < 40 {
                     chrome.setTabBarCollapsed(false)
                 } else if new - old > 6 {
