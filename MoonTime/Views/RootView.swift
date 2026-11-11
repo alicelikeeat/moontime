@@ -226,7 +226,7 @@ struct FloatingTabBar: View {
 
             ZStack(alignment: .topLeading) {
                 Color.clear
-                    .glassSurface(in: Capsule(style: .continuous), tint: Palette.accent.opacity(0.08), interactive: true, chrome: true)
+                    .glassSurface(in: Capsule(style: .continuous), tint: Palette.accent.opacity(0.08), interactive: true, elevated: false, chrome: true)
                     .frame(width: itemWidth, height: geo.size.height)
                     .scaleEffect(sliding ? 1.12 : 1)
                     .position(x: lensX, y: geo.size.height / 2)

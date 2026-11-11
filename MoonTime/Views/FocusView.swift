@@ -196,10 +196,10 @@ private struct ActiveFocusContent: View {
             // Breathing glow: a radial gradient (cheap) instead of a live blur.
             Circle()
                 .fill(RadialGradient(
-                    colors: [Palette.focusAccent.opacity(state.isPaused ? 0 : 0.28), .clear],
-                    center: .center, startRadius: 80, endRadius: 175
+                    colors: [.clear, Palette.focusAccent.opacity(state.isPaused ? 0 : 0.14), .clear],
+                    center: .center, startRadius: 112, endRadius: 162
                 ))
-                .frame(width: 350, height: 350)
+                .frame(width: 324, height: 324)
                 .phaseAnimator([false, true]) { glow, inhale in
                     glow.scaleEffect(inhale ? 1.06 : 0.94).opacity(inhale ? 1 : 0.65)
                 } animation: { _ in .easeInOut(duration: 2.6) }

@@ -78,6 +78,7 @@ private struct GlassSurface<S: Shape>: ViewModifier {
         } else if #available(iOS 26.0, *) {
             content
                 .glassEffect(liquidGlass, in: shape)
+                .background { if chrome && elevated { floatShadow } }
                 .overlay { if elevated { hairline } }
         } else {
             content
@@ -97,9 +98,19 @@ private struct GlassSurface<S: Shape>: ViewModifier {
         }
     }
 
+    /// Soft drop shadow drawn from the rim only (the middle stays clear).
+    /// Used just for floating chrome: a handful of views, not every card.
+    private var floatShadow: some View {
+        shape
+            .stroke(Color.black.opacity(tone == .light ? 0.08 : 0.3), lineWidth: 6)
+            .blur(radius: 10)
+            .offset(y: 4)
+            .allowsHitTesting(false)
+    }
+
     // Clear glass on a white page has no visible edge, so each piece gets a
-    // hairline. (A blurred rim shadow looked nice but cost a blur per card
-    // on every scroll frame.)
+    // hairline. Cards get no blurred shadow: that cost a blur per card on
+    // every scroll frame.
     private var hairline: some View {
         shape
             .stroke(tone == .light ? Color.black.opacity(0.05) : Color.white.opacity(0.1), lineWidth: 0.5)
