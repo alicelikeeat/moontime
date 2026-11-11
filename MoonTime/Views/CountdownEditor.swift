@@ -25,8 +25,8 @@ struct CountdownEditor: View {
                             .font(.system(size: 14))
                     }
                     DatePicker("日期", selection: $draft.date, displayedComponents: .date)
-                    Toggle("每年重复", isOn: $draft.repeatsYearly)
-                    Toggle("置顶", isOn: $draft.pinned)
+                    Toggle("每年重复", isOn: $draft.repeatsYearly).tint(Palette.accent)
+                    Toggle("置顶", isOn: $draft.pinned).tint(Palette.accent)
                 } footer: {
                     let phrase = draft.phrase()
                     Text("\(phrase.lead) \(phrase.number) \(phrase.unit)")

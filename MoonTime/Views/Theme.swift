@@ -69,9 +69,10 @@ struct HeaderAddButton: View {
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Palette.accent)
                 .frame(width: 40, height: 40)
+                .glassSurface(in: Circle(), interactive: true)
                 .contentShape(Circle())
         }
-        .systemGlassButton(shape: Circle())
+        .buttonStyle(.pressScale)
         .accessibilityLabel(label)
         .accessibilityIdentifier(id)
     }
@@ -89,9 +90,10 @@ struct PillButton: View {
                 .foregroundStyle(Palette.accent)
                 .padding(.horizontal, 14)
                 .frame(minHeight: 34)
+                .glassSurface(in: Capsule(), tint: Palette.accent.opacity(0.08), interactive: true)
                 .contentShape(Capsule())
         }
-        .systemGlassButton(shape: Capsule())
+        .buttonStyle(.pressScale)
     }
 }
 

@@ -95,6 +95,7 @@ struct AlarmEditor: View {
                     TextField("标签，比如：起床、吃药", text: $draft.label)
                         .font(.system(size: 14))
                     Toggle("开启", isOn: $draft.enabled)
+                        .tint(Palette.accent)
                 }
                 Section {
                     HStack(spacing: 6) {
