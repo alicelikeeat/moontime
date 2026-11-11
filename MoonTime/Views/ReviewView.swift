@@ -15,7 +15,7 @@ struct ReviewView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(Date.now, format: .dateTime.month(.defaultDigits).day().hour().minute().locale(Locale(identifier: "zh_CN")))
+                    Text("\(TimeFormat.monthDay(.now)) · \(TimeFormat.clock(.now))")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Palette.secondaryLabel)
                     Text("今日复盘").font(.system(size: 34, weight: .bold))

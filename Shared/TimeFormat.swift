@@ -7,6 +7,19 @@ enum TimeFormat {
         return String(format: "%d:%02d", c.hour ?? 0, c.minute ?? 0)
     }
 
+    private static let weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
+
+    /// "11月11日" — built by hand so it reads the same whatever the device language.
+    static func monthDay(_ date: Date, calendar: Calendar = .current) -> String {
+        let c = calendar.dateComponents([.month, .day], from: date)
+        return "\(c.month ?? 1)月\(c.day ?? 1)日"
+    }
+
+    /// "星期三"
+    static func weekday(_ date: Date, calendar: Calendar = .current) -> String {
+        weekdays[(calendar.component(.weekday, from: date) - 1) % 7]
+    }
+
     /// "1:19:48"
     static func countdown(_ interval: TimeInterval) -> String {
         let s = max(0, Int(interval.rounded()))

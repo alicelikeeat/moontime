@@ -7,7 +7,7 @@ struct InboxView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("安排到 \(store.selectedDate.formatted(.dateTime.month(.defaultDigits).day().locale(Locale(identifier: "zh_CN"))))的空闲时间")
+                    Text("安排到 \(TimeFormat.monthDay(store.selectedDate))的空闲时间")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Palette.secondaryLabel)
                     Text("收件箱").font(.system(size: 34, weight: .bold))

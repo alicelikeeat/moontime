@@ -44,7 +44,7 @@ struct TodayView: View {
 
     private func header(for day: Date) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(day, format: .dateTime.month(.defaultDigits).day().weekday(.wide).locale(Locale(identifier: "zh_CN")))
+            Text("\(TimeFormat.monthDay(day)) \(TimeFormat.weekday(day))")
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Palette.secondaryLabel)
             Text(relativeTitle(for: day))
@@ -57,7 +57,7 @@ struct TodayView: View {
         if calendar.isDateInToday(day) { return "今天" }
         if calendar.isDateInTomorrow(day) { return "明天" }
         if calendar.isDateInYesterday(day) { return "昨天" }
-        return day.formatted(.dateTime.weekday(.wide).locale(Locale(identifier: "zh_CN")))
+        return TimeFormat.weekday(day)
     }
 
     private func tap(_ block: TimeBlock) {

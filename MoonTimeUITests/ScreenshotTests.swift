@@ -36,23 +36,38 @@ final class ScreenshotTests: XCTestCase {
         pause(1)
         snap("06-today-focusing")
 
-        XCUIDevice.shared.press(.home)
-        pause(2)
-        snap("07-island-compact")
-
+        // Lock screen: iOS asks once whether to allow Live Activities; allow it.
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.03)).press(forDuration: 1.2)
-        pause(1.5)
-        snap("08-island-expanded")
-
         let lock = NSSelectorFromString("pressLockButton")
         if XCUIDevice.shared.responds(to: lock) {
             XCUIDevice.shared.perform(lock)
             pause(1.5)
             XCUIDevice.shared.perform(lock)
             pause(2)
-            snap("09-lock-screen")
+            let allow = springboard.buttons["Allow"]
+            if allow.waitForExistence(timeout: 3) {
+                snap("07-lock-permission")
+                allow.tap()
+                pause(1.5)
+            }
+            snap("08-lock-screen")
+            // Unlock (the simulator has no passcode).
+            XCUIDevice.shared.press(.home)
+            pause(1)
+            XCUIDevice.shared.press(.home)
+            pause(2)
+        } else {
+            XCUIDevice.shared.press(.home)
+            pause(2)
         }
+
+        // Home screen: compact Dynamic Island.
+        if springboard.state != .runningForeground { XCUIDevice.shared.press(.home); pause(2) }
+        snap("09-island-compact")
+
+        springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.03)).press(forDuration: 1.2)
+        pause(1.5)
+        snap("10-island-expanded")
     }
 
     func testEveningReview() {
@@ -62,10 +77,10 @@ final class ScreenshotTests: XCTestCase {
         pause(1)
         tap(app.buttons["tab.review"])
         pause(1)
-        snap("10-review")
+        snap("11-review")
         app.swipeUp()
         pause(1)
-        snap("11-review-bottom")
+        snap("12-review-bottom")
     }
 
     private func tap(_ element: XCUIElement) {
