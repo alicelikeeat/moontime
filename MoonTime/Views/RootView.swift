@@ -27,6 +27,7 @@ struct RootView: View {
     @State private var chrome = ChromeState()
     @State private var tab: AppTab = .today
     @State private var showingNewBlock = false
+    @State private var showingAppearance = false
     @State private var menuOpen = false
     @Namespace private var glass
 
@@ -73,6 +74,9 @@ struct RootView: View {
         .sheet(isPresented: $showingNewBlock) {
             NewBlockSheet()
         }
+        .sheet(isPresented: $showingAppearance) {
+            AppearanceSheet()
+        }
     }
 
     /// Tab bar, add button, quick-action menu and messages share one glass
@@ -117,6 +121,10 @@ struct RootView: View {
                     menuItem("从收件箱安排", symbol: "tray", id: "fab.inbox") {
                         toggleMenu()
                         tab = .inbox
+                    }
+                    menuItem("外观", symbol: "paintbrush", id: "fab.appearance") {
+                        toggleMenu()
+                        showingAppearance = true
                     }
                 }
 

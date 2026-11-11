@@ -48,6 +48,14 @@ final class ScreenshotTests: XCTestCase {
         tap(app.buttons["取消"])
         pause(0.8)
 
+        tap(app.buttons["new-block"])
+        pause(1)
+        tap(app.buttons["fab.appearance"])
+        pause(1.2)
+        snap("03b-appearance")
+        tap(app.buttons["完成"])
+        pause(0.8)
+
         tapTab(app, "tab.focus")
         snap("04-focus-empty")
 

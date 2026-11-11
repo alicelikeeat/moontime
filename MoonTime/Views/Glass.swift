@@ -2,33 +2,100 @@ import SwiftUI
 
 enum GlassTone { case light, dark }
 
+// MARK: Appearance setting
+
+/// User-adjustable look: background, glass style and how frosted the glass is.
+struct GlassAppearance: Equatable {
+    enum Background: String, CaseIterable, Identifiable {
+        case plain, ambient
+        var id: String { rawValue }
+        var title: String { self == .plain ? "纯白" : "氛围光" }
+    }
+
+    enum Style: String, CaseIterable, Identifiable {
+        case clear, regular
+        var id: String { rawValue }
+        var title: String { self == .clear ? "透明" : "标准" }
+    }
+
+    var background: Background = .plain
+    var style: Style = .clear
+    /// 0 = fully clear, 1 = milky.
+    var frost: Double = 0
+
+    static let backgroundKey = "appearance.background"
+    static let styleKey = "appearance.glass"
+    static let frostKey = "appearance.frost"
+}
+
+private struct GlassAppearanceKey: EnvironmentKey {
+    static let defaultValue = GlassAppearance()
+}
+
+extension EnvironmentValues {
+    var glassAppearance: GlassAppearance {
+        get { self[GlassAppearanceKey.self] }
+        set { self[GlassAppearanceKey.self] = newValue }
+    }
+}
+
+// MARK: Glass surface
+
 extension View {
-    /// Liquid Glass on iOS 26+, frosted material with a light rim on older systems.
-    /// `tint` is used as-is, so pass a low opacity for a subtle tint.
-    @ViewBuilder
+    /// Liquid Glass on iOS 26+, a hand-made glass look on older systems.
+    /// Follows the appearance setting. `tint` is used as-is (pass a low
+    /// opacity for a subtle tint) and replaces the frost tint.
     func glassSurface<S: Shape>(
         in shape: S, tint: Color? = nil, interactive: Bool = false, tone: GlassTone = .light
     ) -> some View {
+        modifier(GlassSurface(shape: shape, tint: tint, interactive: interactive, tone: tone))
+    }
+}
+
+private struct GlassSurface<S: Shape>: ViewModifier {
+    let shape: S
+    let tint: Color?
+    let interactive: Bool
+    let tone: GlassTone
+    @Environment(\.glassAppearance) private var look
+
+    private var frostColor: Color {
+        (tone == .light ? Color.white : Color.black).opacity(look.frost * 0.5)
+    }
+
+    func body(content: Content) -> some View {
         if #available(iOS 26.0, *) {
-            glassEffect(.regular.tint(tint).interactive(interactive), in: shape)
+            content.glassEffect(liquidGlass, in: shape)
         } else {
-            background {
-                ZStack {
-                    shape.fill(.ultraThinMaterial)
-                    if let tint { shape.fill(tint) }
+            content
+                .background {
+                    ZStack {
+                        if look.style == .regular {
+                            shape.fill(.ultraThinMaterial)
+                        } else {
+                            shape.fill(.white.opacity(tone == .light ? 0.12 : 0.05))
+                        }
+                        shape.fill(tint ?? frostColor)
+                    }
                 }
-            }
-            .overlay {
-                shape.stroke(
-                    LinearGradient(
-                        colors: [.white.opacity(tone == .light ? 0.9 : 0.35), .white.opacity(tone == .light ? 0.2 : 0.05)],
-                        startPoint: .top, endPoint: .bottom
-                    ),
-                    lineWidth: 1
-                )
-            }
-            .shadow(color: .black.opacity(tone == .light ? 0.08 : 0.35), radius: 12, y: 6)
+                .overlay {
+                    shape.stroke(
+                        LinearGradient(
+                            colors: [.white.opacity(tone == .light ? 0.95 : 0.35), .white.opacity(tone == .light ? 0.25 : 0.05)],
+                            startPoint: .top, endPoint: .bottom
+                        ),
+                        lineWidth: 1
+                    )
+                }
+                .shadow(color: .black.opacity(tone == .light ? 0.08 : 0.35), radius: 12, y: 6)
         }
+    }
+
+    @available(iOS 26.0, *)
+    private var liquidGlass: Glass {
+        let base: Glass = look.style == .clear ? .clear : .regular
+        let tinted = base.tint(tint ?? (look.frost > 0.01 ? frostColor : nil))
+        return tinted.interactive(interactive)
     }
 }
 
@@ -140,19 +207,23 @@ extension View {
     func collapsesTabBarOnScroll() -> some View { modifier(CollapsesTabBarOnScroll()) }
 }
 
-/// Soft colour fields behind the glass so it has something to refract.
+/// Page background: plain (pure white, or solid dark on the focus screen)
+/// or soft colour fields for the glass to refract.
 struct AmbientBackground: View {
     var dark = false
+    @Environment(\.glassAppearance) private var look
 
     var body: some View {
         ZStack {
-            dark ? Palette.focusBackground : Palette.background
-            blob(dark ? Palette.focusAccent : Palette.accent, opacity: dark ? 0.35 : 0.16, size: 360)
-                .offset(x: -150, y: -300)
-            blob(Color(hex: 0x7B61FF), opacity: dark ? 0.28 : 0.13, size: 320)
-                .offset(x: 170, y: 40)
-            blob(Color(hex: 0xF97316), opacity: dark ? 0.12 : 0.10, size: 300)
-                .offset(x: -110, y: 380)
+            dark ? Palette.focusBackground : (look.background == .plain ? Color.white : Palette.background)
+            if look.background == .ambient {
+                blob(dark ? Palette.focusAccent : Palette.accent, opacity: dark ? 0.35 : 0.16, size: 360)
+                    .offset(x: -150, y: -300)
+                blob(Color(hex: 0x7B61FF), opacity: dark ? 0.28 : 0.13, size: 320)
+                    .offset(x: 170, y: 40)
+                blob(Color(hex: 0xF97316), opacity: dark ? 0.12 : 0.10, size: 300)
+                    .offset(x: -110, y: 380)
+            }
         }
         .ignoresSafeArea()
         .accessibilityHidden(true)
