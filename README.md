@@ -33,3 +33,11 @@ open MoonTime.xcodeproj
 
 - 数据目前只在内存里，带一天示例数据；下一步可以接 SwiftData 和日历（EventKit）同步。
 - App 在后台时，"即将开始"提醒由本地通知发出；要让锁屏上的实时活动在后台也切换成提醒样式，需要服务端发 ActivityKit 推送。
+
+## 未签名 IPA
+
+每次推送到 `main` 或开发分支，GitHub Actions（`.github/workflows/unsigned-ipa.yml`）都会在 macOS 上构建一个未签名的 `MoonTime-unsigned.ipa`，发布到仓库的 Releases（预发布）。安装前需要用 AltStore、Sideloadly 或自己的开发者证书重新签名。
+
+## 玻璃效果
+
+iOS 26 及以上使用系统的 Liquid Glass（`glassEffect`），iOS 17–25 回退为毛玻璃材质加高光描边。相关代码在 `MoonTime/Views/Glass.swift`。

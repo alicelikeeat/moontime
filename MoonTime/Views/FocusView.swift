@@ -19,7 +19,7 @@ struct FocusView: View {
         .padding(.top, 12)
         .padding(.bottom, 8)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Palette.focusBackground.ignoresSafeArea())
+        .background(AmbientBackground(dark: true))
         .foregroundStyle(.white)
         .preferredColorScheme(.dark)
     }
@@ -30,8 +30,7 @@ struct FocusView: View {
                 Image(systemName: "chevron.down")
                     .font(.system(size: 17, weight: .semibold))
                     .frame(width: 44, height: 44)
-                    .background(.white.opacity(0.1), in: Circle())
-                    .overlay(Circle().stroke(.white.opacity(0.16), lineWidth: 1))
+                    .glassSurface(in: Circle(), interactive: true, tone: .dark)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("返回今天")
@@ -63,7 +62,7 @@ struct FocusView: View {
                     Text("开始：\(block.title)")
                         .font(.system(size: 17, weight: .semibold))
                         .frame(maxWidth: .infinity, minHeight: 56)
-                        .background(Palette.focusAccent, in: Capsule())
+                        .glassSurface(in: Capsule(), tint: Palette.focusAccent, interactive: true, tone: .dark)
                 }
                 .buttonStyle(.plain)
             } else {
@@ -84,8 +83,7 @@ private struct BadgeLabelStyle: LabelStyle {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background(.white.opacity(0.1), in: Capsule())
-        .overlay(Capsule().stroke(.white.opacity(0.16), lineWidth: 1))
+        .glassSurface(in: Capsule(), tone: .dark)
     }
 }
 
@@ -124,14 +122,13 @@ private struct ActiveFocusContent: View {
                     Label(state.isPaused ? "继续" : "暂停", systemImage: state.isPaused ? "play.fill" : "pause.fill")
                         .font(.system(size: 17, weight: .semibold))
                         .frame(maxWidth: .infinity, minHeight: 56)
-                        .background(.white.opacity(0.12), in: Capsule())
-                        .overlay(Capsule().stroke(.white.opacity(0.2), lineWidth: 1))
+                        .glassSurface(in: Capsule(), interactive: true, tone: .dark)
                 }
                 Button(action: { store.completeFocus() }) {
                     Label("完成", systemImage: "checkmark")
                         .font(.system(size: 17, weight: .semibold))
                         .frame(maxWidth: .infinity, minHeight: 56)
-                        .background(Palette.focusAccent, in: Capsule())
+                        .glassSurface(in: Capsule(), tint: Palette.focusAccent, interactive: true, tone: .dark)
                 }
             }
             .buttonStyle(.plain)
@@ -170,7 +167,7 @@ private struct ActiveFocusContent: View {
         }
         .frame(maxWidth: .infinity)
         .padding(12)
-        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 16))
+        .glassSurface(in: RoundedRectangle(cornerRadius: 16), tone: .dark)
     }
 
     private func nextUp(title: String, start: Date) -> some View {
@@ -194,11 +191,11 @@ private struct ActiveFocusContent: View {
                 HStack(spacing: 8) {
                     Button("推迟 10 分钟", action: store.snoozeReminder)
                         .frame(maxWidth: .infinity, minHeight: 44)
-                        .background(.white.opacity(0.16), in: Capsule())
+                        .glassSurface(in: Capsule(), interactive: true, tone: .dark)
                     Button("好的", action: store.dismissReminder)
                         .foregroundStyle(Color(hex: 0x111318))
                         .frame(maxWidth: .infinity, minHeight: 44)
-                        .background(.white, in: Capsule())
+                        .glassSurface(in: Capsule(), tint: .white.opacity(0.9), interactive: true, tone: .dark)
                 }
                 .font(.system(size: 14, weight: .semibold))
                 .buttonStyle(.plain)
@@ -206,6 +203,6 @@ private struct ActiveFocusContent: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 18))
+        .glassSurface(in: RoundedRectangle(cornerRadius: 18), tone: .dark)
     }
 }

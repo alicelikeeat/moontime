@@ -42,12 +42,12 @@ struct ReviewView: View {
                             .foregroundStyle(Palette.softAccentText)
                             .padding(.horizontal, 14)
                             .frame(minHeight: 36)
-                            .background(Palette.softAccentFill, in: Capsule())
+                            .glassSurface(in: Capsule(), tint: Palette.accent.opacity(0.14), interactive: true)
                             .buttonStyle(.plain)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
-                    .background(.white, in: RoundedRectangle(cornerRadius: 20))
+                    .glassSurface(in: RoundedRectangle(cornerRadius: 20))
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
@@ -56,11 +56,11 @@ struct ReviewView: View {
                         .font(.system(size: 15))
                         .padding(.horizontal, 12)
                         .frame(height: 40)
-                        .background(Palette.background, in: RoundedRectangle(cornerRadius: 10))
+                        .background(.white.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
-                .background(.white, in: RoundedRectangle(cornerRadius: 20))
+                .glassSurface(in: RoundedRectangle(cornerRadius: 20))
 
                 Button {
                     let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: .now) ?? .now
@@ -71,7 +71,7 @@ struct ReviewView: View {
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity, minHeight: 56)
-                        .background(Palette.accent, in: Capsule())
+                        .glassSurface(in: Capsule(), tint: Palette.accent, interactive: true)
                 }
                 .buttonStyle(.plain)
             }
@@ -79,7 +79,7 @@ struct ReviewView: View {
             .padding(.top, 12)
             .padding(.bottom, 110)
         }
-        .background(Palette.background.ignoresSafeArea())
+        .background(AmbientBackground())
         .foregroundStyle(Palette.label)
     }
 
@@ -90,7 +90,7 @@ struct ReviewView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(.white, in: RoundedRectangle(cornerRadius: 16))
+        .glassSurface(in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
@@ -163,7 +163,7 @@ private struct PlanVsActualCard: View {
                 .lineSpacing(3)
         }
         .padding(16)
-        .background(.white, in: RoundedRectangle(cornerRadius: 20))
+        .glassSurface(in: RoundedRectangle(cornerRadius: 20))
     }
 
     private func legend(_ color: Color, _ text: String) -> some View {

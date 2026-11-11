@@ -10,27 +10,35 @@ struct TodayView: View {
         let day = store.selectedDate
         let blocks = store.selectedBlocks
 
-        VStack(alignment: .leading, spacing: 14) {
-            header(for: day)
-            WeekStrip()
-            HStack(spacing: 8) {
-                Chip(text: "已安排 \(TimeFormat.hours(store.scheduledTime(on: day))) 小时")
-                Chip(text: "空闲 \(TimeFormat.hours(store.freeTime(on: day))) 小时")
-                Chip(text: "完成 \(blocks.filter(\.isDone).count)/\(blocks.count)")
+        DayTimeline(
+            day: day,
+            blocks: blocks,
+            freeSlots: store.freeSlots(on: day),
+            inboxCount: store.inbox.count,
+            focus: store.focus,
+            onTap: tap,
+            onSchedule: onOpenInbox
+        )
+        .padding(.horizontal, 16)
+        .safeAreaInset(edge: .top, spacing: 8) {
+            // Timeline scrolls underneath this glass panel.
+            GlassGroup(spacing: 8) {
+                VStack(alignment: .leading, spacing: 12) {
+                    header(for: day)
+                    WeekStrip()
+                    HStack(spacing: 8) {
+                        Chip(text: "已安排 \(TimeFormat.hours(store.scheduledTime(on: day))) 小时")
+                        Chip(text: "空闲 \(TimeFormat.hours(store.freeTime(on: day))) 小时")
+                        Chip(text: "完成 \(blocks.filter(\.isDone).count)/\(blocks.count)")
+                    }
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassSurface(in: RoundedRectangle(cornerRadius: 28))
             }
-            DayTimeline(
-                day: day,
-                blocks: blocks,
-                freeSlots: store.freeSlots(on: day),
-                inboxCount: store.inbox.count,
-                focus: store.focus,
-                onTap: tap,
-                onSchedule: onOpenInbox
-            )
+            .padding(.horizontal, 12)
         }
-        .padding(.top, 12)
-        .padding(.horizontal, 20)
-        .background(Palette.background.ignoresSafeArea())
+        .background(AmbientBackground())
         .foregroundStyle(Palette.label)
     }
 
@@ -69,7 +77,7 @@ private struct Chip: View {
             .foregroundStyle(Palette.tertiaryLabel)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(.white, in: Capsule())
+            .glassSurface(in: Capsule(), tint: .white.opacity(0.35))
     }
 }
 

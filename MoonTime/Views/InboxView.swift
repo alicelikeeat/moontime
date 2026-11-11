@@ -35,19 +35,19 @@ struct InboxView: View {
                             .foregroundStyle(Palette.softAccentText)
                             .padding(.horizontal, 14)
                             .frame(minHeight: 36)
-                            .background(Palette.softAccentFill, in: Capsule())
+                            .glassSurface(in: Capsule(), tint: Palette.accent.opacity(0.14), interactive: true)
                             .buttonStyle(.plain)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
-                    .background(.white, in: RoundedRectangle(cornerRadius: 20))
+                    .glassSurface(in: RoundedRectangle(cornerRadius: 20))
                 }
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
             .padding(.bottom, 110)
         }
-        .background(Palette.background.ignoresSafeArea())
+        .background(AmbientBackground())
         .foregroundStyle(Palette.label)
     }
 }

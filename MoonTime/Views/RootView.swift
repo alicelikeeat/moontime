@@ -49,21 +49,21 @@ struct RootView: View {
 
             // The focus screen is full-bleed, like the design.
             if tab != .focus {
-                HStack(alignment: .bottom) {
-                    FloatingTabBar(selection: $tab)
-                    Spacer(minLength: 12)
-                    Button {
-                        showingNewBlock = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.system(size: 24, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 64, height: 64)
-                            .background(Palette.accent, in: Circle())
-                            .overlay(Circle().stroke(.white.opacity(0.5), lineWidth: 1))
-                            .shadow(color: Palette.accent.opacity(0.35), radius: 12, y: 8)
+                GlassGroup(spacing: 12) {
+                    HStack(alignment: .bottom) {
+                        FloatingTabBar(selection: $tab)
+                        Spacer(minLength: 12)
+                        Button {
+                            showingNewBlock = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .frame(width: 64, height: 64)
+                                .glassSurface(in: Circle(), tint: Palette.accent, interactive: true)
+                        }
+                        .accessibilityLabel("新建时间块")
                     }
-                    .accessibilityLabel("新建时间块")
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 8)
@@ -107,8 +107,6 @@ struct FloatingTabBar: View {
         .padding(4)
         .frame(maxWidth: 278)
         .frame(height: 64)
-        .background(.ultraThinMaterial, in: Capsule())
-        .overlay(Capsule().stroke(.white.opacity(0.9), lineWidth: 1))
-        .shadow(color: .black.opacity(0.12), radius: 15, y: 8)
+        .glassSurface(in: Capsule(), interactive: true)
     }
 }

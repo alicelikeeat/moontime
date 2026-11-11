@@ -104,6 +104,7 @@ struct DayTimeline: View {
         }
         .padding(.horizontal, 12)
         .frame(maxHeight: .infinity)
+        .glassSurface(in: RoundedRectangle(cornerRadius: 10), tint: .white.opacity(0.15))
         .overlay(
             RoundedRectangle(cornerRadius: 10)
                 .stroke(Palette.freeSlotBorder, style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
@@ -151,7 +152,7 @@ struct BlockCard: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(category.fill, in: RoundedRectangle(cornerRadius: cornerRadius))
+        .glassSurface(in: RoundedRectangle(cornerRadius: cornerRadius), tint: category.fill.opacity(0.8))
         .overlay {
             if focus != nil {
                 RoundedRectangle(cornerRadius: cornerRadius).stroke(Palette.accent, lineWidth: 2)
