@@ -140,10 +140,12 @@ struct HeaderFade: View {
 struct InkOutline: ViewModifier {
     func body(content: Content) -> some View {
         if Palette.monochrome {
+            // Four hard offsets make a crisp, even edge.
             content
-                .shadow(color: .black, radius: 0.4)
-                .shadow(color: .black.opacity(0.85), radius: 0.6)
-                .shadow(color: .black.opacity(0.25), radius: 1.6)
+                .shadow(color: .black, radius: 0, x: 0.6, y: 0)
+                .shadow(color: .black, radius: 0, x: -0.6, y: 0)
+                .shadow(color: .black, radius: 0, x: 0, y: 0.6)
+                .shadow(color: .black, radius: 0, x: 0, y: -0.6)
         } else {
             content
         }
