@@ -116,6 +116,20 @@ final class ScreenshotTests: XCTestCase {
         snap("10-island-expanded")
     }
 
+    func testCountdowns() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-UITests"]
+        app.launch()
+        pause(1)
+        tapTab(app, "tab.countdown")
+        pause(1.2)
+        snap("13-countdown")
+        tap(app.buttons["countdown.add"])
+        pause(1.2)
+        snap("14-countdown-editor")
+        tap(app.buttons["取消"])
+    }
+
     func testEveningReview() {
         let app = XCUIApplication()
         app.launchArguments = ["-UITests", "-EveningDemo"]

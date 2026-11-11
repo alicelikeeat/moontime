@@ -1,13 +1,14 @@
 import SwiftUI
 
 enum AppTab: Hashable, CaseIterable {
-    case today, inbox, focus, review
+    case today, inbox, focus, countdown, review
 
     var title: String {
         switch self {
         case .today: "今天"
         case .inbox: "收件箱"
         case .focus: "专注"
+        case .countdown: "倒数"
         case .review: "复盘"
         }
     }
@@ -17,6 +18,7 @@ enum AppTab: Hashable, CaseIterable {
         case .today: "calendar"
         case .inbox: "tray"
         case .focus: "timer"
+        case .countdown: "hourglass"
         case .review: "chart.bar"
         }
     }
@@ -24,7 +26,9 @@ enum AppTab: Hashable, CaseIterable {
 
 struct RootView: View {
     @Environment(DayStore.self) private var store
+    @Environment(CountdownStore.self) private var countdowns
     @State private var chrome = ChromeState()
+    @State private var editingCountdown: Countdown?
     @State private var tab: AppTab = .today
     @State private var showingNewBlock = false
     @State private var showingAppearance = false
@@ -53,6 +57,9 @@ struct RootView: View {
                         insertion: .move(edge: .bottom).combined(with: .opacity),
                         removal: .move(edge: .bottom).combined(with: .opacity)
                     ))
+            case .countdown:
+                CountdownView(onAdd: newCountdown, onEdit: { editingCountdown = $0 })
+                    .transition(.blurReplace)
             case .review:
                 ReviewView(onPlanTomorrow: { go(.today) })
                     .transition(.blurReplace)
@@ -87,6 +94,13 @@ struct RootView: View {
         .sheet(isPresented: $showingAppearance) {
             AppearanceSheet()
         }
+        .sheet(item: $editingCountdown) { item in
+            CountdownEditor(countdown: item, isNew: !countdowns.contains(item.id)) { saved, isNew in
+                let phrase = saved.phrase()
+                chrome.show("\(saved.title) · \(phrase.lead) \(phrase.number) \(phrase.unit)", symbol: "hourglass")
+                if isNew, tab != .countdown { go(.countdown) }
+            }
+        }
     }
 
     /// Tab bar, add button, quick-action menu and messages share one glass
@@ -118,6 +132,10 @@ struct RootView: View {
                 }
 
                 if menuOpen {
+                    menuItem("新建倒数日", symbol: "hourglass", id: "fab.countdown", order: 4) {
+                        toggleMenu()
+                        newCountdown()
+                    }
                     menuItem("新建时间块", symbol: "square.and.pencil", id: "fab.new", order: 3) {
                         toggleMenu()
                         showingNewBlock = true
@@ -139,7 +157,7 @@ struct RootView: View {
                     }
                 }
 
-                HStack(alignment: .bottom) {
+                HStack(alignment: .bottom, spacing: 12) {
                     if chrome.tabBarCollapsed {
                         Button {
                             chrome.setTabBarCollapsed(false)
@@ -154,10 +172,10 @@ struct RootView: View {
                         .buttonStyle(.pressScale)
                         .accessibilityLabel("展开标签栏")
                         .accessibilityIdentifier("tabbar.collapsed")
+                        Spacer(minLength: 0)
                     } else {
                         FloatingTabBar(selection: $tab, glass: glass)
                     }
-                    Spacer(minLength: 12)
                     Button(action: toggleMenu) {
                         Image(systemName: "plus")
                             .font(.system(size: 19, weight: .semibold))
@@ -189,6 +207,11 @@ struct RootView: View {
         .glassID(id, in: glass)
         .glassPop(delay: Double(order) * 0.04, anchor: .bottomTrailing)
         .accessibilityIdentifier(id)
+    }
+
+    private func newCountdown() {
+        let inAMonth = Calendar.current.date(byAdding: .month, value: 1, to: .now) ?? .now
+        editingCountdown = Countdown(title: "", date: inAMonth)
     }
 
     private func go(_ destination: AppTab) {
@@ -238,7 +261,7 @@ struct FloatingTabBar: View {
             }
         }
         .padding(4)
-        .frame(maxWidth: 264)
+        .frame(maxWidth: .infinity)
         .frame(height: 56)
         .glassSurface(in: Capsule(), interactive: true)
         .glassID("tabbar", in: glass)

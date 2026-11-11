@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TodayView: View {
     @Environment(DayStore.self) private var store
+    @Environment(CountdownStore.self) private var countdowns
     var onStartFocus: (TimeBlock) -> Void
     var onOpenFocus: () -> Void
     var onOpenInbox: () -> Void
@@ -44,6 +45,32 @@ struct TodayView: View {
     }
 
     private func header(for day: Date) -> some View {
+        HStack(alignment: .bottom) {
+            dateTitle(for: day)
+            Spacer(minLength: 8)
+            if let featured = countdowns.featured {
+                let phrase = featured.phrase()
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text(featured.title)
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(Palette.secondaryLabel)
+                        .lineLimit(1)
+                    HStack(alignment: .firstTextBaseline, spacing: 2) {
+                        Text(phrase.lead).font(.system(size: 9))
+                        Text(phrase.number)
+                            .font(.system(size: 20, weight: .light))
+                            .monospacedDigit()
+                            .foregroundStyle(featured.color)
+                        Text(phrase.unit).font(.system(size: 9))
+                    }
+                    .foregroundStyle(Palette.secondaryLabel)
+                }
+                .accessibilityElement(children: .combine)
+            }
+        }
+    }
+
+    private func dateTitle(for day: Date) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("\(TimeFormat.monthDay(day)) \(TimeFormat.weekday(day))")
                 .font(.system(size: 12, weight: .semibold))

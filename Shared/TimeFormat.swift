@@ -15,6 +15,13 @@ enum TimeFormat {
         return "\(c.month ?? 1)月\(c.day ?? 1)日"
     }
 
+    /// "2027年2月6日 星期六" (year omitted when it is the current year).
+    static func fullDate(_ date: Date, calendar: Calendar = .current) -> String {
+        let year = calendar.component(.year, from: date)
+        let prefix = year == calendar.component(.year, from: .now) ? "" : "\(year)年"
+        return "\(prefix)\(monthDay(date, calendar: calendar)) \(weekday(date, calendar: calendar))"
+    }
+
     /// "星期三"
     static func weekday(_ date: Date, calendar: Calendar = .current) -> String {
         weekdays[(calendar.component(.weekday, from: date) - 1) % 7]
