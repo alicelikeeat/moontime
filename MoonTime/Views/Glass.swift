@@ -128,9 +128,9 @@ extension View {
     func systemGlassButton<S: Shape>(prominent: Bool = false, tint: Color? = nil, shape: S) -> some View {
         if #available(iOS 26.0, *) {
             if prominent {
-                buttonStyle(.glassProminent).tint(tint).buttonBorderShape(.circle)
+                buttonStyle(.glassProminent).tint(tint).buttonBorderShape(S.self == Circle.self ? .circle : .capsule)
             } else {
-                buttonStyle(.glass).tint(tint).buttonBorderShape(.capsule)
+                buttonStyle(.glass).tint(tint).buttonBorderShape(S.self == Circle.self ? .circle : .capsule)
             }
         } else {
             buttonStyle(.pressScale).glassSurface(in: shape, tint: tint, interactive: true)

@@ -6,10 +6,23 @@ struct AppearanceSheet: View {
     @AppStorage(GlassAppearance.backgroundKey) private var background = GlassAppearance.Background.plain
     @AppStorage(GlassAppearance.styleKey) private var glassStyle = GlassAppearance.Style.clear
     @AppStorage(GlassAppearance.frostKey) private var frost = 0.0
+    @AppStorage(Palette.schemeKey) private var scheme = "white"
 
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Picker("配色", selection: $scheme) {
+                        Text("白色").tag("white")
+                        Text("彩色").tag("colour")
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("appearance.scheme")
+                } header: {
+                    Text("配色")
+                } footer: {
+                    Text("白色：按钮、卡片和图标都用白色与灰色，只保留黑白层次。彩色：分类和强调色使用原设计的颜色。")
+                }
                 Section("背景") {
                     Picker("背景", selection: $background) {
                         ForEach(GlassAppearance.Background.allCases) { Text($0.title).tag($0) }
@@ -46,11 +59,12 @@ struct AppearanceSheet: View {
                     Text("透明：iOS 26 的 Clear Liquid Glass，最通透。标准：带模糊的常规玻璃。雾化程度越高，玻璃越白、文字越清楚。")
                 }
                 Section {
-                    Button("恢复默认（纯白 + 透明）") {
+                    Button("恢复默认（白色 + 纯白 + 透明）") {
                         withAnimation {
                             background = .plain
                             glassStyle = .clear
                             frost = 0
+                            scheme = "white"
                         }
                     }
                 }

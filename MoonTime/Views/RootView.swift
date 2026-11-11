@@ -167,12 +167,12 @@ struct RootView: View {
                     Button(action: toggleMenu) {
                         Image(systemName: "plus")
                             .font(.system(size: 19, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Palette.onAccent)
                             .rotationEffect(.degrees(menuOpen ? 45 : 0))
                             .frame(width: 56, height: 56)
                             .contentShape(Circle())
                     }
-                    .systemGlassButton(prominent: true, tint: Palette.accent, shape: Circle())
+                    .systemGlassButton(prominent: !Palette.monochrome, tint: Palette.accentFill, shape: Circle())
                     .glassID("fab", in: glass)
                     .accessibilityLabel(menuOpen ? "关闭菜单" : "快捷操作")
                     .accessibilityIdentifier("new-block")

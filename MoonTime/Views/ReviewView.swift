@@ -69,11 +69,11 @@ struct ReviewView: View {
                 } label: {
                     Label("规划明天", systemImage: "moon.fill")
                         .font(.mtTitle)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Palette.onAccent)
                         .frame(maxWidth: .infinity, minHeight: 48)
                         .contentShape(Capsule())
                 }
-                .systemGlassButton(prominent: false, tint: Palette.accent, shape: Capsule())
+                .systemGlassButton(prominent: false, tint: Palette.accentFill, shape: Capsule())
                 .padding(.top, 8)
             }
             .padding(.horizontal, Metrics.page)

@@ -1,5 +1,8 @@
 import SwiftUI
 
+/// Glass on the focus screen follows its background: light in the white scheme.
+private var focusTone: GlassTone { Palette.monochrome ? .light : .dark }
+
 struct FocusView: View {
     @Environment(DayStore.self) private var store
     var onClose: () -> Void
@@ -20,8 +23,8 @@ struct FocusView: View {
         .padding(.bottom, 8)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(AmbientBackground(dark: true))
-        .foregroundStyle(.white)
-        .preferredColorScheme(.dark)
+        .foregroundStyle(Palette.focusForeground)
+        .preferredColorScheme(Palette.monochrome ? .light : .dark)
     }
 
     private var topBar: some View {
@@ -30,7 +33,7 @@ struct FocusView: View {
                 Image(systemName: "chevron.down")
                     .font(.mtTitle)
                     .frame(width: 44, height: 44)
-                    .glassSurface(in: Circle(), interactive: true, tone: .dark)
+                    .glassSurface(in: Circle(), interactive: true, tone: focusTone)
             }
             .buttonStyle(.pressScale)
             .accessibilityLabel("返回今天")
@@ -62,7 +65,7 @@ struct FocusView: View {
                     Text("开始：\(block.title)")
                         .font(.mtTitle)
                         .frame(maxWidth: .infinity, minHeight: 48)
-                        .glassSurface(in: Capsule(), tint: Palette.focusAccent, interactive: true, tone: .dark)
+                        .glassSurface(in: Capsule(), tint: Palette.focusAccentFill, interactive: true, tone: focusTone)
                 }
                 .accessibilityIdentifier("focus.start")
                 .buttonStyle(.pressScale)
@@ -84,7 +87,7 @@ private struct BadgeLabelStyle: LabelStyle {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .glassSurface(in: Capsule(), tone: .dark)
+        .glassSurface(in: Capsule(), tone: focusTone)
     }
 }
 
@@ -139,7 +142,7 @@ private struct ActiveFocusContent: View {
                             .font(.mtTitle)
                             .contentTransition(.symbolEffect(.replace))
                             .frame(maxWidth: .infinity, minHeight: 50)
-                            .glassSurface(in: Capsule(), interactive: true, tone: .dark)
+                            .glassSurface(in: Capsule(), interactive: true, tone: focusTone)
                             .glassUnion(state.isPaused ? "pause" : "controls", in: glass)
                             .glassID("pause", in: glass)
                     }
@@ -150,7 +153,7 @@ private struct ActiveFocusContent: View {
                             Text("+15")
                                 .font(.mtTitle)
                                 .frame(width: 64, height: 50)
-                                .glassSurface(in: Capsule(), interactive: true, tone: .dark)
+                                .glassSurface(in: Capsule(), interactive: true, tone: focusTone)
                                 .glassID("extend", in: glass)
                         }
                         .accessibilityLabel("延长 15 分钟")
@@ -161,7 +164,7 @@ private struct ActiveFocusContent: View {
                         Label("完成", systemImage: "checkmark")
                             .font(.mtTitle)
                             .frame(maxWidth: .infinity, minHeight: 50)
-                            .glassSurface(in: Capsule(), tint: Palette.focusAccent, interactive: true, tone: .dark)
+                            .glassSurface(in: Capsule(), tint: Palette.focusAccentFill, interactive: true, tone: focusTone)
                             .glassUnion(state.isPaused ? "finish" : "controls", in: glass)
                             .glassID("finish", in: glass)
                     }
@@ -196,9 +199,9 @@ private struct ActiveFocusContent: View {
                     glow.scaleEffect(inhale ? 1.08 : 0.92).opacity(inhale ? 1 : 0.6)
                 } animation: { _ in .easeInOut(duration: 2.6) }
                 .animation(.smooth(duration: 0.6), value: state.isPaused)
-            Circle().stroke(.white.opacity(0.08), lineWidth: 8)
+            Circle().stroke(Palette.focusTrack, lineWidth: 8)
             Color.clear
-                .glassSurface(in: Circle(), tone: .dark)
+                .glassSurface(in: Circle(), tone: focusTone)
                 .padding(22)
             Circle()
                 .trim(from: 0, to: state.progress(at: now))
@@ -232,7 +235,7 @@ private struct ActiveFocusContent: View {
         }
         .frame(maxWidth: .infinity)
         .padding(12)
-        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous), tone: .dark)
+        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous), tone: focusTone)
         .glassUnion(statsMerged ? "stats" : "stat.\(label)", in: glass)
     }
 
@@ -257,11 +260,11 @@ private struct ActiveFocusContent: View {
                 HStack(spacing: 8) {
                     Button("推迟 10 分钟", action: store.snoozeReminder)
                         .frame(maxWidth: .infinity, minHeight: 44)
-                        .glassSurface(in: Capsule(), interactive: true, tone: .dark)
+                        .glassSurface(in: Capsule(), interactive: true, tone: focusTone)
                     Button("好的", action: store.dismissReminder)
                         .foregroundStyle(Color(hex: 0x111318))
                         .frame(maxWidth: .infinity, minHeight: 44)
-                        .glassSurface(in: Capsule(), tint: .white.opacity(0.9), interactive: true, tone: .dark)
+                        .glassSurface(in: Capsule(), tint: .white.opacity(0.9), interactive: true, tone: focusTone)
                 }
                 .font(.mtHeadline)
                 .buttonStyle(.pressScale)
@@ -271,6 +274,6 @@ private struct ActiveFocusContent: View {
         .animation(.bouncy(duration: 0.5), value: state.phase)
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous), tone: .dark)
+        .glassSurface(in: RoundedRectangle(cornerRadius: Metrics.card, style: .continuous), tone: focusTone)
     }
 }

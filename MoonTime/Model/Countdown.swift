@@ -13,7 +13,7 @@ struct Countdown: Identifiable, Codable, Hashable {
     var colorHex: UInt32 = 0x0060DF
     var pinned = false
 
-    var color: Color { Color(hex: colorHex) }
+    var color: Color { Palette.tone(colorHex) }
 
     /// The day being counted to, at midnight.
     func target(from today: Date = .now, calendar: Calendar = .current) -> Date {

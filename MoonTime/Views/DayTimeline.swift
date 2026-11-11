@@ -221,7 +221,7 @@ struct BlockCard: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .glassSurface(in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous), tint: category.fill.opacity(0.9), elevated: false)
+        .glassSurface(in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous), tint: category.fill.opacity(0.9), elevated: Palette.monochrome)
         .overlay {
             if focus != nil {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).stroke(Palette.accent, lineWidth: 2)
@@ -324,7 +324,7 @@ private struct BlockActions: View {
         GlassGroup(spacing: 8) {
             HStack(spacing: spread ? 12 : -38) {
                 if canFocus {
-                    action("timer", "开始专注", tint: Palette.accent, color: .white, id: "action.focus", run: onFocus)
+                    action("timer", "开始专注", tint: Palette.accentFill, color: Palette.onAccent, id: "action.focus", run: onFocus)
                 }
                 action(isDone ? "arrow.uturn.backward" : "checkmark", isDone ? "标记为未完成" : "标记为完成",
                        color: Palette.label, id: "action.done", run: onToggleDone)

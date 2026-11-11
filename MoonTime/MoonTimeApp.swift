@@ -9,11 +9,16 @@ struct MoonTimeApp: App {
     @AppStorage(GlassAppearance.backgroundKey) private var background = GlassAppearance.Background.plain
     @AppStorage(GlassAppearance.styleKey) private var glassStyle = GlassAppearance.Style.clear
     @AppStorage(GlassAppearance.frostKey) private var frost = 0.0
+    @AppStorage(Palette.schemeKey) private var scheme = "white"
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
+            let _ = { Palette.monochrome = scheme == "white" }()
             RootView()
+                // Rebuild every screen when the colour scheme changes.
+                .id(scheme)
+                .tint(Palette.accent)
                 .environment(store)
                 .environment(countdowns)
                 .environment(habits)

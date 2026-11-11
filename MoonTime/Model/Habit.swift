@@ -11,7 +11,7 @@ struct Habit: Identifiable, Codable, Hashable {
     /// Day keys ("2026-11-11") the habit was done.
     var checkins: Set<String> = []
 
-    var color: Color { Color(hex: colorHex) }
+    var color: Color { Palette.tone(colorHex) }
     var total: Int { checkins.count }
 
     static func key(_ date: Date, calendar: Calendar = .current) -> String {
