@@ -47,6 +47,7 @@ struct InboxView: View {
             .padding(.top, 12)
             .padding(.bottom, 110)
         }
+        .overlay { TopScrollEdgeBlur() }
         .background(AmbientBackground())
         .foregroundStyle(Palette.label)
     }

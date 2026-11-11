@@ -68,3 +68,22 @@ struct AmbientBackground: View {
         Circle().fill(color.opacity(opacity)).frame(width: size, height: size).blur(radius: 90)
     }
 }
+
+/// Frosted fade under the status bar so scrolled content doesn't collide with it.
+struct TopScrollEdgeBlur: View {
+    var body: some View {
+        Rectangle()
+            .fill(.ultraThinMaterial)
+            .mask(
+                LinearGradient(
+                    stops: [.init(color: .black, location: 0), .init(color: .black, location: 0.55), .init(color: .clear, location: 1)],
+                    startPoint: .top, endPoint: .bottom
+                )
+            )
+            .frame(height: 20)
+            .ignoresSafeArea(edges: .top)
+            .frame(maxHeight: .infinity, alignment: .top)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}

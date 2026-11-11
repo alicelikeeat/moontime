@@ -38,7 +38,7 @@ struct NewBlockSheet: View {
             }
             .onAppear(perform: suggestStart)
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.fraction(0.64), .large])
     }
 
     /// Default to the next free slot on the selected day.

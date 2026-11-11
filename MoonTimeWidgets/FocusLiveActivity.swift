@@ -13,41 +13,36 @@ struct FocusLiveActivity: Widget {
                 .activitySystemActionForegroundColor(.white)
         } dynamicIsland: { context in
             DynamicIsland {
-                DynamicIslandExpandedRegion(.leading) {
-                    if context.state.phase != .reminder {
-                        HStack(spacing: 10) {
-                            Image(systemName: "moon.fill")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(Palette.liveAccent)
-                                .frame(width: 36, height: 36)
-                                .background(Palette.islandIconFill, in: RoundedRectangle(cornerRadius: 10))
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text(context.state.isPaused ? "已暂停" : context.attributes.categoryName)
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(Palette.focusSecondary)
-                                Text(context.attributes.taskTitle)
-                                    .font(.system(size: 16, weight: .bold))
-                                    .lineLimit(1)
-                            }
-                        }
-                        .padding(.leading, 4)
-                    }
-                }
-                DynamicIslandExpandedRegion(.trailing) {
-                    if context.state.phase != .reminder {
-                        FocusTimerText(state: context.state)
-                            .font(.system(size: 28, weight: .semibold))
-                            .foregroundStyle(Palette.liveAccent)
-                            .multilineTextAlignment(.trailing)
-                            .frame(maxWidth: 120, alignment: .trailing)
-                            .padding(.trailing, 4)
-                    }
-                }
+                // Everything lives in the full-width bottom region; the side
+                // regions are too narrow for a title and an h:mm:ss timer.
                 DynamicIslandExpandedRegion(.bottom) {
                     if context.state.phase == .reminder {
                         ReminderContent(state: context.state)
                     } else {
                         VStack(spacing: 12) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "moon.fill")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(Palette.liveAccent)
+                                    .frame(width: 36, height: 36)
+                                    .background(Palette.islandIconFill, in: RoundedRectangle(cornerRadius: 10))
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(context.state.isPaused ? "已暂停" : context.attributes.categoryName)
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(Palette.focusSecondary)
+                                    Text(context.attributes.taskTitle)
+                                        .font(.system(size: 16, weight: .bold))
+                                        .lineLimit(1)
+                                }
+                                .layoutPriority(1)
+                                Spacer(minLength: 8)
+                                FocusTimerText(state: context.state)
+                                    .font(.system(size: 28, weight: .semibold))
+                                    .foregroundStyle(Palette.liveAccent)
+                                    .multilineTextAlignment(.trailing)
+                                    .frame(width: 118, alignment: .trailing)
+                                    .minimumScaleFactor(0.8)
+                            }
                             FocusProgressBar(state: context.state)
                             HStack(spacing: 8) {
                                 Button(intent: ToggleFocusPauseIntent()) {
@@ -62,7 +57,8 @@ struct FocusLiveActivity: Widget {
                             }
                             .buttonStyle(.plain)
                         }
-                        .padding(.top, 4)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 4)
                     }
                 }
             } compactLeading: {
@@ -232,6 +228,7 @@ struct FocusProgressBar: View {
         }
         .progressViewStyle(.linear)
         .tint(Palette.liveAccent)
+        .background(Capsule().fill(.white.opacity(0.22)).frame(height: 4))
     }
 }
 
