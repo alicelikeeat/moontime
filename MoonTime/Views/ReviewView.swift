@@ -73,7 +73,7 @@ struct ReviewView: View {
                         .frame(maxWidth: .infinity, minHeight: 48)
                         .contentShape(Capsule())
                 }
-                .systemGlassButton(prominent: false, tint: Palette.accentFill, shape: Capsule())
+                .systemGlassButton(prominent: Palette.accentFill != nil, tint: Palette.accentFill, shape: Capsule())
                 .padding(.top, 8)
             }
             .padding(.horizontal, Metrics.page)

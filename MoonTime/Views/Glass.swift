@@ -124,7 +124,9 @@ private struct GlassSurface<S: Shape>: ViewModifier {
 
     @available(iOS 26.0, *)
     private var liquidGlass: Glass {
-        let base: Glass = look.style == .clear ? .clear : .regular
+        // Clear glass barely shows a tint, so tinted pieces (primary buttons,
+        // category blocks) use regular glass to read as filled.
+        let base: Glass = (look.style == .clear && tint == nil) ? .clear : .regular
         let tinted = base.tint(tint ?? (look.frost > 0.01 ? frostColor : nil))
         return tinted.interactive(interactive)
     }
