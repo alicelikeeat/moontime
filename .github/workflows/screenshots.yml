@@ -57,3 +57,14 @@ jobs:
           path: |
             shots
             test.log
+
+      - name: Print screenshots into the log (base64 JPEG) for remote review
+        if: always()
+        run: |
+          for f in shots/*.png; do
+            [ -e "$f" ] || continue
+            n=$(basename "$f" .png)
+            sips -s format jpeg -s formatOptions 70 -Z 1000 "$f" --out "/tmp/$n.jpg" >/dev/null
+            base64 -i "/tmp/$n.jpg" | tr -d '\n' | fold -w 4000 | sed "s/^/SHOT $n /"
+            echo
+          done
