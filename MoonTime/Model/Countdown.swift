@@ -10,7 +10,7 @@ struct Countdown: Identifiable, Codable, Hashable {
     /// Birthdays and anniversaries: count to the next occurrence.
     var repeatsYearly = false
     var symbol = "calendar"
-    var colorHex: UInt32 = 0x0060DF
+    var colorHex: UInt32 = 0x4F5BD5
     var pinned = false
 
     var color: Color { Palette.tone(colorHex) }
@@ -47,7 +47,7 @@ struct Countdown: Identifiable, Codable, Hashable {
         "calendar", "gift", "birthday.cake", "heart", "star", "airplane",
         "graduationcap", "briefcase", "flag", "sparkles", "leaf", "moon.stars",
     ]
-    static let colors: [UInt32] = [0x0060DF, 0x5B3FD9, 0x00796B, 0xC2410C, 0xD70015, 0x3A3A3C]
+    static let colors: [UInt32] = Palette.choices
 }
 
 /// Countdowns, saved to UserDefaults so they survive relaunches.
@@ -119,13 +119,13 @@ final class CountdownStore {
         // Next Spring Festival, from the Chinese lunar calendar.
         let lunar = Calendar(identifier: .chinese)
         if let festival = lunar.nextDate(after: now, matching: DateComponents(month: 1, day: 1), matchingPolicy: .nextTime) {
-            list.append(Countdown(title: "春节", date: festival, symbol: "sparkles", colorHex: 0xD70015, pinned: true))
+            list.append(Countdown(title: "春节", date: festival, symbol: "sparkles", colorHex: 0xD9675A, pinned: true))
         }
         let calendar = Calendar.current
         if let newYear = calendar.date(from: DateComponents(year: calendar.component(.year, from: now), month: 1, day: 1)) {
-            list.append(Countdown(title: "元旦", date: newYear, repeatsYearly: true, symbol: "flag", colorHex: 0x0060DF))
+            list.append(Countdown(title: "元旦", date: newYear, repeatsYearly: true, symbol: "flag", colorHex: 0x4F5BD5))
         }
-        list.append(Countdown(title: "开始用 MoonTime", date: calendar.startOfDay(for: now), symbol: "moon.stars", colorHex: 0x5B3FD9))
+        list.append(Countdown(title: "开始用 MoonTime", date: calendar.startOfDay(for: now), symbol: "moon.stars", colorHex: 0x8E6BBF))
         return list
     }
 }

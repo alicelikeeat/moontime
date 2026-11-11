@@ -17,7 +17,7 @@ enum Metrics {
 
 /// Five type roles. Everything on screen uses one of these.
 extension Font {
-    static let mtLargeTitle = Font.system(size: 26, weight: .bold)
+    static let mtLargeTitle = Font.system(size: 26, weight: .semibold)
     static let mtTitle = Font.system(size: 14, weight: .semibold)
     static let mtHeadline = Font.system(size: 12, weight: .semibold)
     static let mtBody = Font.system(size: 12)

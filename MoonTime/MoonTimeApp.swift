@@ -9,7 +9,7 @@ struct MoonTimeApp: App {
     @AppStorage(GlassAppearance.backgroundKey) private var background = GlassAppearance.Background.plain
     @AppStorage(GlassAppearance.styleKey) private var glassStyle = GlassAppearance.Style.clear
     @AppStorage(GlassAppearance.frostKey) private var frost = 0.0
-    @AppStorage(Palette.schemeKey) private var scheme = "white"
+    @AppStorage(Palette.schemeKey) private var scheme = "colour"
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {

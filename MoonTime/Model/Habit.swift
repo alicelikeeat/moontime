@@ -7,7 +7,7 @@ struct Habit: Identifiable, Codable, Hashable {
     var id = UUID()
     var title: String
     var symbol = "checkmark.circle"
-    var colorHex: UInt32 = 0x00796B
+    var colorHex: UInt32 = 0x3F8F6B
     /// Day keys ("2026-11-11") the habit was done.
     var checkins: Set<String> = []
 
@@ -105,10 +105,10 @@ final class HabitStore {
             Set(offsets.compactMap { calendar.date(byAdding: .day, value: -$0, to: now) }.map { Habit.key($0) })
         }
         return [
-            Habit(title: "早起", symbol: "sunrise", colorHex: 0xC2410C, checkins: days([1, 2, 3, 4, 6])),
-            Habit(title: "阅读 30 分钟", symbol: "book", colorHex: 0x5B3FD9, checkins: days([0, 1, 2, 3, 4, 5])),
+            Habit(title: "早起", symbol: "sunrise", colorHex: 0xC48A3A, checkins: days([1, 2, 3, 4, 6])),
+            Habit(title: "阅读 30 分钟", symbol: "book", colorHex: 0x8E6BBF, checkins: days([0, 1, 2, 3, 4, 5])),
             Habit(title: "运动", symbol: "figure.run", colorHex: 0x00796B, checkins: days([1, 3, 5])),
-            Habit(title: "喝够 8 杯水", symbol: "drop", colorHex: 0x0060DF, checkins: days([2, 3])),
+            Habit(title: "喝够 8 杯水", symbol: "drop", colorHex: 0x4F5BD5, checkins: days([2, 3])),
         ]
     }
 }

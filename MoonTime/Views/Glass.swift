@@ -9,7 +9,7 @@ struct GlassAppearance: Equatable {
     enum Background: String, CaseIterable, Identifiable {
         case plain, ambient
         var id: String { rawValue }
-        var title: String { self == .plain ? "纯白" : "氛围光" }
+        var title: String { self == .plain ? "素色" : "氛围光" }
     }
 
     enum Style: String, CaseIterable, Identifiable {
@@ -266,7 +266,7 @@ struct AmbientBackground: View {
 
     var body: some View {
         ZStack {
-            dark ? Palette.focusBackground : (look.background == .plain ? Color.white : Palette.background)
+            dark ? Palette.focusBackground : Palette.background
             if look.background == .ambient {
                 blob(dark ? Palette.focusAccent : Palette.accent, opacity: dark ? 0.35 : 0.16, size: 360)
                     .offset(x: -150, y: -300)
